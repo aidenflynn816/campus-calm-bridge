@@ -112,8 +112,11 @@ export const useMessages = (chatWithUserId: string) => {
   useEffect(() => {
     if (!currentUserId || !chatWithUserId) return;
     
-    const channel = supabase
-      .channel('typing')
+    // Explicitly type the channel to match what supabase expects
+    const channel: RealtimeChannel = supabase.channel('typing');
+    
+    // Use the correct pattern for subscribing to postgres changes
+    channel
       .on('postgres_changes',
         {
           event: '*',
