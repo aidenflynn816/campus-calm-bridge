@@ -1,3 +1,4 @@
+
 import { useEffect, useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
@@ -84,17 +85,17 @@ export const useMessages = (chatWithUserId: string) => {
     if (!currentUserId || !chatWithUserId) return;
     
     const channel = supabase
-      .channel('schema-db-changes')
-      .on(
-        'broadcast',
-        { event: 'message' },
-        (payload) => {
-          if (payload.recipient_id === currentUserId) {
-            queryClient.invalidateQueries({ queryKey: ['messages', chatWithUserId] });
-          }
+      .channel('realtime-messages')
+      .on('broadcast', { event: 'message' }, (payload) => {
+        if (payload.recipient_id === currentUserId) {
+          queryClient.invalidateQueries({ queryKey: ['messages', chatWithUserId] });
         }
-      )
-      .subscribe();
+      })
+      .subscribe((status) => {
+        if (status === 'SUBSCRIBED') {
+          console.log('Subscribed to message updates');
+        }
+      });
 
     return () => {
       supabase.removeChannel(channel);
@@ -105,17 +106,17 @@ export const useMessages = (chatWithUserId: string) => {
     if (!currentUserId || !chatWithUserId) return;
     
     const channel = supabase
-      .channel('schema-db-changes')
-      .on(
-        'broadcast',
-        { event: 'typing' },
-        (payload: { user_id: string; is_typing: boolean }) => {
-          if (payload.user_id === chatWithUserId) {
-            setIsTyping(payload.is_typing);
-          }
+      .channel('realtime-typing')
+      .on('broadcast', { event: 'typing' }, (payload: { user_id: string; is_typing: boolean }) => {
+        if (payload.user_id === chatWithUserId) {
+          setIsTyping(payload.is_typing);
         }
-      )
-      .subscribe();
+      })
+      .subscribe((status) => {
+        if (status === 'SUBSCRIBED') {
+          console.log('Subscribed to typing status updates');
+        }
+      });
 
     return () => {
       supabase.removeChannel(channel);
