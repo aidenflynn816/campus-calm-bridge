@@ -4,17 +4,21 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import type { Message, TypingStatus } from '../types/message';
 import { useToast } from '@/hooks/use-toast';
+import { useAuth } from '@/contexts/AuthContext';
 
 export const useMessages = (chatWithUserId: string) => {
   const { toast } = useToast();
+  const { user } = useAuth(); // Get user from AuthContext instead of directly from supabase
   const queryClient = useQueryClient();
   const [isTyping, setIsTyping] = useState(false);
-  const currentUserId = supabase.auth.getSession()?.user?.id;
+  const currentUserId = user?.id; // Use user from AuthContext
 
   // Fetch messages
   const { data: messages = [], isLoading } = useQuery({
     queryKey: ['messages', chatWithUserId],
     queryFn: async () => {
+      if (!currentUserId) return [];
+      
       const { data, error } = await supabase
         .from('messages')
         .select('*')
@@ -31,12 +35,15 @@ export const useMessages = (chatWithUserId: string) => {
       }
 
       return data as Message[];
-    }
+    },
+    enabled: !!currentUserId && !!chatWithUserId, // Only run query if we have both IDs
   });
 
   // Send message mutation
   const { mutate: sendMessage } = useMutation({
     mutationFn: async (content: string) => {
+      if (!currentUserId) throw new Error("User not authenticated");
+      
       const { error } = await supabase.from('messages').insert({
         content,
         sender_id: currentUserId,
@@ -59,6 +66,8 @@ export const useMessages = (chatWithUserId: string) => {
 
   // Update typing status
   const updateTypingStatus = async (isTyping: boolean) => {
+    if (!currentUserId) return;
+    
     const { error } = await supabase
       .from('typing_status')
       .upsert({
@@ -76,10 +85,12 @@ export const useMessages = (chatWithUserId: string) => {
 
   // Subscribe to new messages
   useEffect(() => {
+    if (!currentUserId || !chatWithUserId) return;
+    
     const channel = supabase
       .channel('messages')
       .on(
-        'postgres_changes',
+        'postgres_changes', // This is correct, but needs proper type parameters
         {
           event: 'INSERT',
           schema: 'public',
@@ -99,10 +110,12 @@ export const useMessages = (chatWithUserId: string) => {
 
   // Subscribe to typing status
   useEffect(() => {
+    if (!currentUserId || !chatWithUserId) return;
+    
     const channel = supabase
       .channel('typing')
       .on(
-        'postgres_changes',
+        'postgres_changes', // This is correct, but needs proper type parameters
         {
           event: '*',
           schema: 'public',
@@ -118,7 +131,7 @@ export const useMessages = (chatWithUserId: string) => {
     return () => {
       supabase.removeChannel(channel);
     };
-  }, [chatWithUserId]);
+  }, [chatWithUserId, currentUserId]);
 
   return {
     messages,
