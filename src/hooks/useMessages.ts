@@ -5,6 +5,7 @@ import { supabase } from '@/integrations/supabase/client';
 import type { Message, TypingStatus } from '../types/message';
 import { useToast } from '@/hooks/use-toast';
 import { useAuth } from '@/contexts/AuthContext';
+import { RealtimeChannel } from '@supabase/supabase-js';
 
 export const useMessages = (chatWithUserId: string) => {
   const { toast } = useToast();
@@ -89,8 +90,7 @@ export const useMessages = (chatWithUserId: string) => {
     
     const channel = supabase
       .channel('messages')
-      .on(
-        'postgres_changes', // This is correct, but needs proper type parameters
+      .on('postgres_changes', 
         {
           event: 'INSERT',
           schema: 'public',
@@ -114,8 +114,7 @@ export const useMessages = (chatWithUserId: string) => {
     
     const channel = supabase
       .channel('typing')
-      .on(
-        'postgres_changes', // This is correct, but needs proper type parameters
+      .on('postgres_changes',
         {
           event: '*',
           schema: 'public',
