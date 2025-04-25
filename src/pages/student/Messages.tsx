@@ -1,11 +1,10 @@
-
 import { useState } from "react";
 import Layout from "../../components/Layout";
 import { Card, CardContent } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { Send } from "lucide-react";
+import { Send, MessageSquare } from "lucide-react";
 
 interface Message {
   id: number;
@@ -31,7 +30,6 @@ const Messages = () => {
   const [selectedConversation, setSelectedConversation] = useState<number | null>(1);
   const [newMessage, setNewMessage] = useState("");
   
-  // Mock data for conversations
   const conversations: Conversation[] = [
     {
       id: 1,
@@ -53,7 +51,6 @@ const Messages = () => {
     },
   ];
   
-  // Mock data for messages in a conversation
   const messages: Record<number, Message[]> = {
     1: [
       {
@@ -100,9 +97,6 @@ const Messages = () => {
   const handleSendMessage = () => {
     if (newMessage.trim() === "" || !selectedConversation) return;
     
-    // In a real app, we would send this to the Supabase backend
-    // For now, we'll just clear the input
-    
     setNewMessage("");
   };
   
@@ -117,7 +111,6 @@ const Messages = () => {
       
       <Card className="bridge-card overflow-hidden">
         <div className="flex h-[calc(100vh-200px)] md:h-[600px]">
-          {/* Conversations list - hidden on mobile when a conversation is selected */}
           <div className={`${
             selectedConversation ? "hidden md:block" : ""
           } w-full md:w-1/3 border-r border-bridge-muted/30`}>
@@ -156,13 +149,11 @@ const Messages = () => {
             </div>
           </div>
           
-          {/* Message area */}
           <div className={`${
             selectedConversation ? "flex" : "hidden md:flex"
           } flex-col flex-1`}>
             {selectedConversation ? (
               <>
-                {/* Conversation header */}
                 <div className="p-4 border-b border-bridge-muted/30 flex items-center justify-between">
                   <div className="flex items-center">
                     <button 
@@ -182,7 +173,6 @@ const Messages = () => {
                   </div>
                 </div>
                 
-                {/* Messages */}
                 <div className="flex-1 overflow-y-auto p-4 space-y-4">
                   {messages[selectedConversation]?.map((message) => (
                     <div
@@ -220,7 +210,6 @@ const Messages = () => {
                   ))}
                 </div>
                 
-                {/* Message input */}
                 <div className="p-4 border-t border-bridge-muted/30">
                   <form 
                     className="flex items-center space-x-2"
@@ -246,7 +235,6 @@ const Messages = () => {
                 </div>
               </>
             ) : (
-              // Empty state for desktop when no conversation is selected
               <div className="hidden md:flex flex-col items-center justify-center h-full text-bridge-text/50">
                 <MessageSquare className="h-12 w-12 mb-4" />
                 <h3 className="text-lg font-medium">No conversation selected</h3>

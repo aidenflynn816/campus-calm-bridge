@@ -7,6 +7,7 @@ import { Input } from "@/components/ui/input";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Label } from "@/components/ui/label";
 import { toast } from "sonner";
+import { Calendar, MessageSquare, BookOpen } from "lucide-react";
 
 const Register = () => {
   const [name, setName] = useState("");

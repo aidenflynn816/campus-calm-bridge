@@ -5,6 +5,7 @@ import { useAuth } from "../contexts/AuthContext";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { toast } from "sonner";
+import { Calendar, MessageSquare, BookOpen } from "lucide-react";
 
 const Login = () => {
   const [email, setEmail] = useState("");
