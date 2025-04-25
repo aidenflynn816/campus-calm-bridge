@@ -1,3 +1,4 @@
+
 import type { Config } from "tailwindcss";
 
 export default {
@@ -61,12 +62,26 @@ export default {
 					'accent-foreground': 'hsl(var(--sidebar-accent-foreground))',
 					border: 'hsl(var(--sidebar-border))',
 					ring: 'hsl(var(--sidebar-ring))'
-				}
+				},
+				bridge: {
+					primary: "#4F6D57", // forest green from logo
+					secondary: "#F8F5EB", // soft cream
+					accent: "#A4C3A2", // mint green
+					background: "#FDFBF6", // light cream
+					text: "#333333", // dark slate
+					muted: "#D9E5D6", // light sage
+				},
 			},
 			borderRadius: {
 				lg: 'var(--radius)',
 				md: 'calc(var(--radius) - 2px)',
-				sm: 'calc(var(--radius) - 4px)'
+				sm: 'calc(var(--radius) - 4px)',
+				'2xl': '1rem',
+				'3xl': '1.5rem',
+			},
+			boxShadow: {
+				'soft': '0 4px 20px rgba(0, 0, 0, 0.05)',
+				'medium': '0 6px 25px rgba(0, 0, 0, 0.08)',
 			},
 			keyframes: {
 				'accordion-down': {
