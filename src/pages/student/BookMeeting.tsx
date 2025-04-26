@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import Layout from "../../components/Layout";
 import { Button } from "@/components/ui/button";
@@ -6,11 +5,16 @@ import { Calendar } from "@/components/ui/calendar";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Textarea } from "@/components/ui/textarea";
 import { toast } from "sonner";
+import { useAppointments } from "@/hooks/useAppointments";
+import { useAuth } from "@/contexts/AuthContext";
 
 const BookMeeting = () => {
   const [date, setDate] = useState<Date | undefined>(undefined);
   const [selectedTime, setSelectedTime] = useState<string | null>(null);
   const [reason, setReason] = useState("");
+  const [selectedCounselor, setSelectedCounselor] = useState<string | null>(null);
+  const { createAppointment } = useAppointments();
+  const { user } = useAuth();
   
   // Mock data for available counselors and time slots
   const counselors = [
@@ -23,19 +27,28 @@ const BookMeeting = () => {
     "2:00 PM", "3:00 PM", "4:00 PM"
   ];
   
-  const handleSubmit = () => {
-    if (!date || !selectedTime || !reason) {
+  const handleSubmit = async () => {
+    if (!date || !selectedTime || !reason || !selectedCounselor) {
       toast.error("Please fill in all fields");
       return;
     }
     
-    // Here we would normally send this data to the Supabase backend
-    toast.success("Appointment request sent!");
-    
-    // Reset form
-    setDate(undefined);
-    setSelectedTime(null);
-    setReason("");
+    try {
+      await createAppointment.mutateAsync({
+        counselor_id: selectedCounselor,
+        date: date.toISOString().split('T')[0],
+        time: selectedTime,
+        reason
+      });
+
+      // Reset form
+      setDate(undefined);
+      setSelectedTime(null);
+      setReason("");
+      setSelectedCounselor(null);
+    } catch (error) {
+      // Error is handled in the mutation
+    }
   };
   
   return (
@@ -124,7 +137,7 @@ const BookMeeting = () => {
                   <div 
                     key={counselor.id} 
                     className="flex items-center space-x-3 p-3 rounded-2xl hover:bg-bridge-muted/20 cursor-pointer border border-bridge-muted/30"
-                    onClick={() => {}}
+                    onClick={() => setSelectedCounselor(counselor.id.toString())}
                   >
                     <div className="w-10 h-10 rounded-full bg-bridge-accent flex items-center justify-center text-bridge-primary font-medium">
                       {counselor.name.charAt(0)}
@@ -157,14 +170,14 @@ const BookMeeting = () => {
                 </div>
                 <div>
                   <p className="text-sm text-bridge-text/70">Counselor</p>
-                  <p className="font-medium">{counselors[0].name}</p>
+                  <p className="font-medium">{selectedCounselor ? counselors.find(c => c.id.toString() === selectedCounselor)?.name : "Not selected"}</p>
                 </div>
               </div>
               
               <Button 
                 onClick={handleSubmit} 
                 className="bridge-button-primary w-full"
-                disabled={!date || !selectedTime || !reason}
+                disabled={!date || !selectedTime || !reason || !selectedCounselor}
               >
                 Request Appointment
               </Button>

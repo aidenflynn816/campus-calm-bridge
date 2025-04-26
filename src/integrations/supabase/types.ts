@@ -9,6 +9,42 @@ export type Json =
 export type Database = {
   public: {
     Tables: {
+      appointments: {
+        Row: {
+          counselor_id: string
+          created_at: string
+          date: string
+          id: string
+          reason: string | null
+          status: Database["public"]["Enums"]["appointment_status"]
+          student_id: string
+          time: string
+          updated_at: string
+        }
+        Insert: {
+          counselor_id: string
+          created_at?: string
+          date: string
+          id?: string
+          reason?: string | null
+          status?: Database["public"]["Enums"]["appointment_status"]
+          student_id: string
+          time: string
+          updated_at?: string
+        }
+        Update: {
+          counselor_id?: string
+          created_at?: string
+          date?: string
+          id?: string
+          reason?: string | null
+          status?: Database["public"]["Enums"]["appointment_status"]
+          student_id?: string
+          time?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
       counselor_student_relationships: {
         Row: {
           counselor_id: string
@@ -138,6 +174,7 @@ export type Database = {
     }
     Enums: {
       app_role: "student" | "counselor" | "admin"
+      appointment_status: "pending" | "confirmed" | "cancelled" | "completed"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -254,6 +291,7 @@ export const Constants = {
   public: {
     Enums: {
       app_role: ["student", "counselor", "admin"],
+      appointment_status: ["pending", "confirmed", "cancelled", "completed"],
     },
   },
 } as const
