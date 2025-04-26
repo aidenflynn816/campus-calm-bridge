@@ -7,6 +7,22 @@ import { Calendar, Clock, Users } from "lucide-react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useAppointments } from "@/hooks/useAppointments";
 
+// Define getStatusBadge outside of components so it's accessible to all
+const getStatusBadge = (status: string) => {
+  switch (status) {
+    case "pending":
+      return <Badge className="bg-yellow-500">Pending</Badge>;
+    case "confirmed":
+      return <Badge className="bg-green-500">Confirmed</Badge>;
+    case "cancelled":
+      return <Badge variant="destructive">Cancelled</Badge>;
+    case "completed":
+      return <Badge variant="outline" className="text-bridge-text/70">Completed</Badge>;
+    default:
+      return null;
+  }
+};
+
 const CounselorAppointments = () => {
   const { appointments, isLoading, updateAppointmentStatus } = useAppointments();
   
@@ -22,21 +38,6 @@ const CounselorAppointments = () => {
       month: 'long', 
       day: 'numeric'
     });
-  };
-  
-  const getStatusBadge = (status: string) => {
-    switch (status) {
-      case "pending":
-        return <Badge className="bg-yellow-500">Pending</Badge>;
-      case "confirmed":
-        return <Badge className="bg-green-500">Confirmed</Badge>;
-      case "cancelled":
-        return <Badge variant="destructive">Cancelled</Badge>;
-      case "completed":
-        return <Badge variant="outline" className="text-bridge-text/70">Completed</Badge>;
-      default:
-        return null;
-    }
   };
   
   const handleStatusUpdate = async (appointmentId: string, newStatus: 'confirmed' | 'cancelled' | 'completed') => {
