@@ -1,10 +1,10 @@
+
 import { useEffect, useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import type { Message, TypingStatus } from '../types/message';
 import { useToast } from '@/hooks/use-toast';
 import { useAuth } from '@/contexts/AuthContext';
-import { RealtimeChannel } from '@supabase/supabase-js';
 
 export const useMessages = (chatWithUserId: string) => {
   const { toast } = useToast();
@@ -13,15 +13,18 @@ export const useMessages = (chatWithUserId: string) => {
   const [isTyping, setIsTyping] = useState(false);
   const currentUserId = user?.id;
 
+  // Fetch messages between current user and selected chat user
   const { data: messages = [], isLoading } = useQuery({
     queryKey: ['messages', chatWithUserId],
     queryFn: async () => {
-      if (!currentUserId) return [];
+      if (!currentUserId || !chatWithUserId) return [];
       
+      // Get messages where current user is either sender or recipient
+      // and the other party is chatWithUserId
       const { data, error } = await supabase
         .from('messages')
         .select('*')
-        .or(`sender_id.eq.${currentUserId},recipient_id.eq.${currentUserId}`)
+        .or(`and(sender_id.eq.${currentUserId},recipient_id.eq.${chatWithUserId}),and(sender_id.eq.${chatWithUserId},recipient_id.eq.${currentUserId})`)
         .order('created_at', { ascending: true });
 
       if (error) {
@@ -33,20 +36,37 @@ export const useMessages = (chatWithUserId: string) => {
         return [];
       }
 
+      // Mark messages from other user as read
+      const unreadMessages = data?.filter(msg => 
+        msg.sender_id === chatWithUserId && !msg.read_at
+      );
+
+      if (unreadMessages && unreadMessages.length > 0) {
+        await supabase
+          .from('messages')
+          .update({ read_at: new Date().toISOString() })
+          .in('id', unreadMessages.map(msg => msg.id));
+      }
+
       return data as Message[];
     },
     enabled: !!currentUserId && !!chatWithUserId,
   });
 
+  // Send new message
   const { mutate: sendMessage } = useMutation({
     mutationFn: async (content: string) => {
-      if (!currentUserId) throw new Error("User not authenticated");
+      if (!currentUserId || !chatWithUserId) throw new Error("User not authenticated or no recipient selected");
       
-      const { error } = await supabase.from('messages').insert({
+      const newMessage = {
         content,
         sender_id: currentUserId,
         recipient_id: chatWithUserId
-      });
+      };
+
+      const { error } = await supabase
+        .from('messages')
+        .insert(newMessage);
 
       if (error) throw error;
     },
@@ -62,8 +82,9 @@ export const useMessages = (chatWithUserId: string) => {
     }
   });
 
+  // Update typing status
   const updateTypingStatus = async (isTyping: boolean) => {
-    if (!currentUserId) return;
+    if (!currentUserId || !chatWithUserId) return;
     
     const { error } = await supabase
       .from('typing_status')
@@ -80,19 +101,35 @@ export const useMessages = (chatWithUserId: string) => {
     }
   };
 
+  // Listen for new messages
   useEffect(() => {
     if (!currentUserId || !chatWithUserId) return;
     
+    // Subscribe to message inserts/updates
     const channel = supabase
       .channel('realtime-messages')
-      .on('presence', { event: 'message' }, (payload) => {
-        if (payload.recipient_id === currentUserId) {
+      .on('postgres_changes', { 
+        event: 'INSERT', 
+        schema: 'public',
+        table: 'messages',
+        filter: `recipient_id=eq.${currentUserId}`
+      }, (payload) => {
+        // If the new message is from the selected chat, invalidate the query
+        if (payload.new && payload.new.sender_id === chatWithUserId) {
           queryClient.invalidateQueries({ queryKey: ['messages', chatWithUserId] });
+          
+          // Mark message as read immediately if we're in this chat
+          supabase
+            .from('messages')
+            .update({ read_at: new Date().toISOString() })
+            .eq('id', payload.new.id);
         }
       })
       .subscribe((status) => {
         if (status === 'SUBSCRIBED') {
           console.log('Subscribed to message updates');
+        } else if (status === 'CHANNEL_ERROR') {
+          console.error('Failed to subscribe to message updates');
         }
       });
 
@@ -101,19 +138,28 @@ export const useMessages = (chatWithUserId: string) => {
     };
   }, [chatWithUserId, currentUserId, queryClient]);
 
+  // Listen for typing status changes
   useEffect(() => {
     if (!currentUserId || !chatWithUserId) return;
     
+    // Set up subscription for typing status
     const channel = supabase
       .channel('realtime-typing')
-      .on('presence', { event: 'typing' }, (payload: { user_id: string; is_typing: boolean }) => {
-        if (payload.user_id === chatWithUserId) {
-          setIsTyping(payload.is_typing);
+      .on('postgres_changes', {
+        event: 'UPDATE',
+        schema: 'public',
+        table: 'typing_status',
+        filter: `user_id=eq.${chatWithUserId}`
+      }, (payload) => {
+        if (payload.new && payload.new.chat_with_user_id === currentUserId) {
+          setIsTyping(!!payload.new.is_typing);
         }
       })
       .subscribe((status) => {
         if (status === 'SUBSCRIBED') {
           console.log('Subscribed to typing status updates');
+        } else if (status === 'CHANNEL_ERROR') {
+          console.error('Failed to subscribe to typing status updates');
         }
       });
 
