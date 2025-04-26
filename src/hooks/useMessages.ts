@@ -1,4 +1,3 @@
-
 import { useEffect, useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
@@ -86,7 +85,7 @@ export const useMessages = (chatWithUserId: string) => {
     
     const channel = supabase
       .channel('realtime-messages')
-      .on('broadcast', { event: 'message' }, (payload) => {
+      .on('presence', { event: 'message' }, (payload) => {
         if (payload.recipient_id === currentUserId) {
           queryClient.invalidateQueries({ queryKey: ['messages', chatWithUserId] });
         }
@@ -107,7 +106,7 @@ export const useMessages = (chatWithUserId: string) => {
     
     const channel = supabase
       .channel('realtime-typing')
-      .on('broadcast', { event: 'typing' }, (payload: { user_id: string; is_typing: boolean }) => {
+      .on('presence', { event: 'typing' }, (payload: { user_id: string; is_typing: boolean }) => {
         if (payload.user_id === chatWithUserId) {
           setIsTyping(payload.is_typing);
         }
