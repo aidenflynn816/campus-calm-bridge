@@ -1,4 +1,3 @@
-
 import { useState, useEffect, useRef } from "react";
 import Layout from "../../components/Layout";
 import { Card } from "@/components/ui/card";
@@ -49,17 +48,31 @@ const CounselorMessages = () => {
       // For now, return mock data
       return [
         {
-          id: "sample-student-id",
-          name: "John Student",
+          id: "student-1",
+          name: "Alex Thompson",
           avatar_url: null,
-          last_message: "Hello Dr., can we talk?",
-          unread_count: 2
+          last_message: "Thanks Dr., the meditation techniques really helped with my test anxiety.",
+          unread_count: 1
         },
         {
-          id: "sample-student-id-2",
-          name: "Sarah Johnson",
+          id: "student-2",
+          name: "Jordan Martinez",
           avatar_url: null,
-          last_message: "Thanks for your help!",
+          last_message: "Can we schedule a session for next week?",
+          unread_count: 3
+        },
+        {
+          id: "student-3",
+          name: "Sam Wilson",
+          avatar_url: null,
+          last_message: "I've been feeling much better since our last talk.",
+          unread_count: 0
+        },
+        {
+          id: "student-4",
+          name: "Taylor Reed",
+          avatar_url: null,
+          last_message: "The group session was really helpful yesterday.",
           unread_count: 0
         }
       ] as Student[];

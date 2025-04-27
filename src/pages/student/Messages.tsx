@@ -1,4 +1,3 @@
-
 import { useState, useEffect, useRef } from "react";
 import Layout from "../../components/Layout";
 import { Card } from "@/components/ui/card";
@@ -37,26 +36,32 @@ const Messages = () => {
     isTyping
   } = useMessages(selectedCounselor || '');
 
-  // For now, we'll use mock data
   const { data: counselors = [], isLoading: counselorsLoading } = useQuery({
     queryKey: ['student_counselors', currentUserId],
     queryFn: async () => {
-      // In a real app, fetch from the counselor_student_relationships
       return [
         {
           id: "1",
-          name: "Dr. Jamie Counselor",
+          name: "Dr. Jamie Wilson",
           withInitial: "J",
           avatar_url: null,
-          last_message: "Yes, that time works for me. I'll see you then!",
-          unread_count: 0
+          last_message: "Remember to try those breathing exercises we discussed when you feel overwhelmed.",
+          unread_count: 2
         },
         {
           id: "2",
-          name: "Dr. Jordan Smith",
-          withInitial: "J",
+          name: "Dr. Sarah Chen",
+          withInitial: "S",
           avatar_url: null,
-          last_message: "Have you tried the breathing exercise we discussed?",
+          last_message: "Looking forward to our session tomorrow at 2pm!",
+          unread_count: 0
+        },
+        {
+          id: "3",
+          name: "Dr. Michael Brown",
+          withInitial: "M",
+          avatar_url: null,
+          last_message: "Great progress in our last session. Keep practicing mindfulness!",
           unread_count: 1
         }
       ] as Counselor[];
@@ -64,7 +69,6 @@ const Messages = () => {
     enabled: !!currentUserId
   });
 
-  // Debounce typing status updates
   useDebounce(
     () => {
       if (selectedCounselor) {
@@ -75,7 +79,6 @@ const Messages = () => {
     [newMessage]
   );
   
-  // Scroll to bottom when new messages arrive
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
   }, [messages]);
@@ -91,7 +94,6 @@ const Messages = () => {
     updateTypingStatus(false);
   };
 
-  // Get details of selected counselor
   const selectedCounselorData = counselors.find(c => c.id === selectedCounselor);
 
   return (
@@ -105,7 +107,6 @@ const Messages = () => {
       
       <Card className="bridge-card overflow-hidden">
         <div className="flex h-[calc(100vh-200px)] md:h-[600px]">
-          {/* Counselors List */}
           <div className={`${
             selectedCounselor ? "hidden md:block" : ""
           } w-full md:w-1/3 border-r border-bridge-muted/30`}>
@@ -165,7 +166,6 @@ const Messages = () => {
             </ScrollArea>
           </div>
           
-          {/* Chat Area */}
           <div className={`${
             selectedCounselor ? "flex" : "hidden md:flex"
           } flex-col flex-1`}>
