@@ -1,7 +1,7 @@
-
 import { ReactNode } from 'react';
 import { useLocation, Link } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
+import { EmergencyButton } from './EmergencyButton';
 import { 
   Calendar, 
   MessageSquare, 
@@ -25,7 +25,6 @@ const Layout = ({ children }: LayoutProps) => {
     return location.pathname === path;
   };
   
-  // Navigation items based on user role
   const navItems = user?.role === 'student' 
     ? [
         { path: '/student', icon: <Home size={20} />, label: 'Dashboard' },
@@ -46,7 +45,6 @@ const Layout = ({ children }: LayoutProps) => {
 
   return (
     <div className="min-h-screen flex flex-col md:flex-row bg-bridge-background">
-      {/* Sidebar for desktop */}
       <div className="hidden md:flex md:w-64 lg:w-72 bg-white border-r border-bridge-muted/30 flex-col">
         <div className="p-6 flex items-center space-x-3 border-b border-bridge-muted/30">
           <img 
@@ -100,9 +98,7 @@ const Layout = ({ children }: LayoutProps) => {
         </div>
       </div>
       
-      {/* Main content */}
       <div className="flex-1 flex flex-col">
-        {/* Mobile header */}
         <header className="md:hidden bg-white border-b border-bridge-muted/30 p-4">
           <div className="flex justify-between items-center">
             <div className="flex items-center space-x-3">
@@ -114,7 +110,6 @@ const Layout = ({ children }: LayoutProps) => {
               <h1 className="text-lg font-medium text-bridge-primary">Bridge</h1>
             </div>
             
-            {/* Mobile user info */}
             <div className="flex items-center space-x-2">
               <div className="w-8 h-8 rounded-full bg-bridge-accent flex items-center justify-center text-bridge-primary font-medium">
                 {user?.name?.charAt(0) || 'U'}
@@ -123,12 +118,11 @@ const Layout = ({ children }: LayoutProps) => {
           </div>
         </header>
         
-        {/* Page content */}
         <main className="flex-1 p-4 md:p-8 overflow-y-auto">
           {children}
+          <EmergencyButton />
         </main>
         
-        {/* Mobile navigation */}
         <nav className="md:hidden bg-white border-t border-bridge-muted/30 py-2">
           <ul className="grid grid-cols-5 gap-1">
             {navItems.slice(0, 5).map((item) => (
