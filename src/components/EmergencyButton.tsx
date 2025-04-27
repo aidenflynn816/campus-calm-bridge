@@ -9,7 +9,6 @@ import {
   DialogHeader,
   DialogTitle,
   DialogTrigger,
-  DialogFooter,
 } from "./ui/dialog";
 import {
   AlertDialog,
@@ -27,6 +26,9 @@ import { useAuth } from "@/contexts/AuthContext";
 export function EmergencyButton() {
   const { user } = useAuth();
   const [emergencyContact, setEmergencyContact] = useState(user?.emergency_contact || "");
+  
+  // National Suicide Prevention Lifeline
+  const suicidePreventionNumber = "988";
   const counselingOfficeNumber = "1-800-123-4567"; // This should come from env or database
   
   const handleEmergencyCall = (phoneNumber: string) => {
@@ -44,7 +46,7 @@ export function EmergencyButton() {
         <DialogTrigger asChild>
           <Button
             size="icon"
-            className="h-14 w-14 rounded-full bg-[#E5DEFF] hover:bg-[#D1C5FF] text-bridge-primary shadow-md"
+            className="h-14 w-14 rounded-full bg-red-500 hover:bg-red-600 text-white shadow-md"
           >
             <Shield className="h-6 w-6" />
             <span className="sr-only">Emergency Help</span>
@@ -65,12 +67,39 @@ export function EmergencyButton() {
                   className="w-full py-6 text-lg"
                   variant="secondary"
                 >
-                  Call for Immediate Help
+                  Call National Suicide Prevention Lifeline
                 </Button>
               </AlertDialogTrigger>
               <AlertDialogContent>
                 <AlertDialogHeader>
-                  <AlertDialogTitle>Are you sure?</AlertDialogTitle>
+                  <AlertDialogTitle>National Suicide Prevention Lifeline</AlertDialogTitle>
+                  <AlertDialogDescription>
+                    This will initiate a call to the National Suicide Prevention Lifeline.
+                  </AlertDialogDescription>
+                </AlertDialogHeader>
+                <AlertDialogFooter>
+                  <AlertDialogCancel>Cancel</AlertDialogCancel>
+                  <AlertDialogAction
+                    onClick={() => handleEmergencyCall(suicidePreventionNumber)}
+                  >
+                    Yes, Call Now
+                  </AlertDialogAction>
+                </AlertDialogFooter>
+              </AlertDialogContent>
+            </AlertDialog>
+
+            <AlertDialog>
+              <AlertDialogTrigger asChild>
+                <Button
+                  className="w-full py-6 text-lg"
+                  variant="secondary"
+                >
+                  Call Counseling Office
+                </Button>
+              </AlertDialogTrigger>
+              <AlertDialogContent>
+                <AlertDialogHeader>
+                  <AlertDialogTitle>Call Counseling Office</AlertDialogTitle>
                   <AlertDialogDescription>
                     This will initiate a call to the counseling office emergency number.
                   </AlertDialogDescription>

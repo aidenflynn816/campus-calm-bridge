@@ -1,4 +1,3 @@
-
 import { createContext, useContext, useEffect, useState, ReactNode } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { toast } from 'sonner';
@@ -10,6 +9,7 @@ interface User {
   role: 'student' | 'counselor';
   name?: string;
   profile_image?: string;
+  emergency_contact?: string; // Add this line
 }
 
 interface AuthContextType {
