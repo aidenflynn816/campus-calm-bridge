@@ -38,14 +38,11 @@ const CounselorMessages = () => {
     isTyping
   } = useMessages(selectedStudent || '');
 
-  // Fetch students that have a relationship with the counselor
   const { data: students = [], isLoading: studentsLoading } = useQuery({
     queryKey: ['counselor_students', currentUserId],
     queryFn: async () => {
       if (!currentUserId) return [];
 
-      // In a real app, we would fetch from counselor_student_relationships
-      // For now, return mock data
       return [
         {
           id: "student-1",
@@ -80,7 +77,6 @@ const CounselorMessages = () => {
     enabled: !!currentUserId
   });
 
-  // Debounce typing status updates
   useDebounce(
     () => {
       if (selectedStudent) {
@@ -91,7 +87,6 @@ const CounselorMessages = () => {
     [newMessage]
   );
   
-  // Scroll to bottom when new messages arrive
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
   }, [messages]);
@@ -107,7 +102,6 @@ const CounselorMessages = () => {
     updateTypingStatus(false);
   };
 
-  // Get name of selected student
   const selectedStudentName = students.find(s => s.id === selectedStudent)?.name || "Student";
 
   return (
@@ -121,7 +115,6 @@ const CounselorMessages = () => {
 
       <Card className="bridge-card overflow-hidden">
         <div className="flex h-[calc(100vh-200px)] md:h-[600px]">
-          {/* Students List */}
           <div className={`${
             selectedStudent ? "hidden md:block" : ""
           } w-full md:w-1/3 border-r border-bridge-muted/30`}>
@@ -179,7 +172,6 @@ const CounselorMessages = () => {
             </ScrollArea>
           </div>
 
-          {/* Chat Area */}
           <div className={`${
             selectedStudent ? "flex" : "hidden md:flex"
           } flex-col flex-1`}>

@@ -19,36 +19,80 @@ export const useMessages = (chatWithUserId: string) => {
     queryFn: async () => {
       if (!currentUserId || !chatWithUserId) return [];
       
-      // Get messages where current user is either sender or recipient
-      // and the other party is chatWithUserId
-      const { data, error } = await supabase
-        .from('messages')
-        .select('*')
-        .or(`and(sender_id.eq.${currentUserId},recipient_id.eq.${chatWithUserId}),and(sender_id.eq.${chatWithUserId},recipient_id.eq.${currentUserId})`)
-        .order('created_at', { ascending: true });
+      try {
+        // In demo mode with mock IDs, return mock messages
+        if (chatWithUserId.startsWith('student-') || 
+            /^[1-9]\d*$/.test(chatWithUserId)) {
+          // Generate mock messages for demo purposes
+          const mockMessages: Message[] = [
+            {
+              id: '1234-5678-abcd-efgh',
+              content: 'Hi there! How can I help you today?',
+              sender_id: chatWithUserId,
+              recipient_id: currentUserId,
+              created_at: new Date(Date.now() - 3600000).toISOString(),
+              read_at: new Date(Date.now() - 3300000).toISOString()
+            },
+            {
+              id: 'abcd-efgh-1234-5678',
+              content: 'I wanted to discuss my progress this semester.',
+              sender_id: currentUserId,
+              recipient_id: chatWithUserId,
+              created_at: new Date(Date.now() - 3000000).toISOString(),
+              read_at: new Date(Date.now() - 2800000).toISOString()
+            },
+            {
+              id: '5678-abcd-efgh-1234',
+              content: 'That sounds great. What specific areas would you like to focus on?',
+              sender_id: chatWithUserId,
+              recipient_id: currentUserId, 
+              created_at: new Date(Date.now() - 2400000).toISOString(),
+              read_at: new Date(Date.now() - 2200000).toISOString()
+            }
+          ];
+          return mockMessages;
+        }
+        
+        // For real Supabase data (with valid UUIDs)
+        // Get messages where current user is either sender or recipient
+        // and the other party is chatWithUserId
+        const { data, error } = await supabase
+          .from('messages')
+          .select('*')
+          .or(`and(sender_id.eq.${currentUserId},recipient_id.eq.${chatWithUserId}),and(sender_id.eq.${chatWithUserId},recipient_id.eq.${currentUserId})`)
+          .order('created_at', { ascending: true });
 
-      if (error) {
+        if (error) {
+          toast({
+            variant: "destructive",
+            title: "Error fetching messages",
+            description: error.message
+          });
+          return [];
+        }
+
+        // Mark messages from other user as read
+        const unreadMessages = data?.filter(msg => 
+          msg.sender_id === chatWithUserId && !msg.read_at
+        );
+
+        if (unreadMessages && unreadMessages.length > 0) {
+          await supabase
+            .from('messages')
+            .update({ read_at: new Date().toISOString() })
+            .in('id', unreadMessages.map(msg => msg.id));
+        }
+
+        return data as Message[];
+      } catch (error) {
+        console.error('Error fetching messages:', error);
         toast({
           variant: "destructive",
           title: "Error fetching messages",
-          description: error.message
+          description: error instanceof Error ? error.message : "Unknown error"
         });
         return [];
       }
-
-      // Mark messages from other user as read
-      const unreadMessages = data?.filter(msg => 
-        msg.sender_id === chatWithUserId && !msg.read_at
-      );
-
-      if (unreadMessages && unreadMessages.length > 0) {
-        await supabase
-          .from('messages')
-          .update({ read_at: new Date().toISOString() })
-          .in('id', unreadMessages.map(msg => msg.id));
-      }
-
-      return data as Message[];
     },
     enabled: !!currentUserId && !!chatWithUserId,
   });
@@ -58,17 +102,32 @@ export const useMessages = (chatWithUserId: string) => {
     mutationFn: async (content: string) => {
       if (!currentUserId || !chatWithUserId) throw new Error("User not authenticated or no recipient selected");
       
-      const newMessage = {
-        content,
-        sender_id: currentUserId,
-        recipient_id: chatWithUserId
-      };
+      try {
+        // For demo mode with mock IDs
+        if (chatWithUserId.startsWith('student-') || 
+            /^[1-9]\d*$/.test(chatWithUserId)) {
+          // Return a mock successful response for demo purposes
+          return { success: true };
+        }
+        
+        // Real Supabase implementation
+        const newMessage = {
+          content,
+          sender_id: currentUserId,
+          recipient_id: chatWithUserId
+        };
 
-      const { error } = await supabase
-        .from('messages')
-        .insert(newMessage);
+        const { error } = await supabase
+          .from('messages')
+          .insert(newMessage);
 
-      if (error) throw error;
+        if (error) throw error;
+        
+        return { success: true };
+      } catch (error) {
+        console.error('Error sending message:', error);
+        throw error;
+      }
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['messages', chatWithUserId] });
@@ -86,17 +145,26 @@ export const useMessages = (chatWithUserId: string) => {
   const updateTypingStatus = async (isTyping: boolean) => {
     if (!currentUserId || !chatWithUserId) return;
     
-    const { error } = await supabase
-      .from('typing_status')
-      .upsert({
-        user_id: currentUserId,
-        chat_with_user_id: chatWithUserId,
-        is_typing: isTyping
-      }, {
-        onConflict: 'user_id,chat_with_user_id'
-      });
+    // Skip for demo mode
+    if (chatWithUserId.startsWith('student-') || /^[1-9]\d*$/.test(chatWithUserId)) {
+      return;
+    }
+    
+    try {
+      const { error } = await supabase
+        .from('typing_status')
+        .upsert({
+          user_id: currentUserId,
+          chat_with_user_id: chatWithUserId,
+          is_typing: isTyping
+        }, {
+          onConflict: 'user_id,chat_with_user_id'
+        });
 
-    if (error) {
+      if (error) {
+        console.error('Error updating typing status:', error);
+      }
+    } catch (error) {
       console.error('Error updating typing status:', error);
     }
   };
@@ -104,6 +172,11 @@ export const useMessages = (chatWithUserId: string) => {
   // Listen for new messages
   useEffect(() => {
     if (!currentUserId || !chatWithUserId) return;
+    
+    // Skip realtime subscription for demo mode
+    if (chatWithUserId.startsWith('student-') || /^[1-9]\d*$/.test(chatWithUserId)) {
+      return;
+    }
     
     // Subscribe to message inserts/updates
     const channel = supabase
@@ -141,6 +214,11 @@ export const useMessages = (chatWithUserId: string) => {
   // Listen for typing status changes
   useEffect(() => {
     if (!currentUserId || !chatWithUserId) return;
+    
+    // Skip for demo mode
+    if (chatWithUserId.startsWith('student-') || /^[1-9]\d*$/.test(chatWithUserId)) {
+      return;
+    }
     
     // Set up subscription for typing status
     const channel = supabase
