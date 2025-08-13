@@ -1,3 +1,4 @@
+
 import { createContext, useContext, useEffect, useState, ReactNode } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { toast } from 'sonner';
@@ -88,9 +89,43 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         
         setSession(session);
         
-        if (session?.user) {
+        if (session?.user && event === 'SIGNED_IN') {
+          console.log('User signed in, fetching profile and redirecting...');
+          // Fetch profile and set user, then redirect
+          const profile = await fetchUserProfile(session.user.id);
+          console.log('Profile fetched:', profile);
+          
+          let newUser: User;
+          if (profile) {
+            newUser = {
+              id: session.user.id,
+              email: session.user.email!,
+              role: profile.role as 'student' | 'counselor',
+              full_name: profile.full_name,
+              name: profile.full_name, // Backward compatibility
+              avatar_url: profile.avatar_url,
+              profile_image: profile.avatar_url, // Backward compatibility
+            };
+          } else {
+            // Handle case where profile doesn't exist
+            newUser = {
+              id: session.user.id,
+              email: session.user.email!,
+              role: 'student' as const, // Default role
+              name: session.user.email, // Fallback name
+            };
+          }
+          
+          console.log('Setting user and redirecting:', newUser);
+          setUser(newUser);
+          
+          // Redirect to appropriate dashboard
+          const redirectPath = newUser.role === 'student' ? '/student' : '/counselor';
+          console.log('Redirecting to:', redirectPath);
+          navigate(redirectPath);
+        } else if (session?.user) {
+          // Handle other auth events (like initial session)
           console.log('Setting user from session...');
-          // Defer profile fetching to avoid deadlocks
           setTimeout(async () => {
             const profile = await fetchUserProfile(session.user.id);
             console.log('Profile fetched:', profile);
@@ -137,7 +172,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     });
 
     return () => subscription.unsubscribe();
-  }, []);
+  }, [navigate]);
 
   // Sign in function
   const signIn = async (email: string, password: string) => {
@@ -170,8 +205,8 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       }
 
       if (data.user) {
-        // Don't navigate here - let the auth state change handle routing
         toast.success('Signed in successfully');
+        // The redirect will be handled by the onAuthStateChange listener
       }
     } catch (error: any) {
       console.error('Error signing in:', error);
