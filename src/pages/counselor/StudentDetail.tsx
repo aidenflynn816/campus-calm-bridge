@@ -12,6 +12,7 @@ import { useStudents } from "../../hooks/useStudents";
 import { useMoodCheckins } from "../../hooks/useMoodCheckins";
 import { useAppointments } from "../../hooks/useAppointments";
 import { useDataSharingRequests } from "../../hooks/useDataSharingRequests";
+import MoodChart from "../../components/MoodChart";
 
 import { useToast } from "../../hooks/use-toast";
 
@@ -21,7 +22,7 @@ const StudentDetail = () => {
   const { toast } = useToast();
   
   const { students } = useStudents();
-  const { moodCheckins } = useMoodCheckins(studentId);
+  const { moodCheckins, getMoodTrendData } = useMoodCheckins(studentId);
   const { appointments } = useAppointments();
   const { 
     createRequest, 
@@ -260,23 +261,12 @@ const StudentDetail = () => {
         {/* Mood Data (only if approved) */}
         {hasApprovedAccess && (
           <div className="grid md:grid-cols-2 gap-6">
-            <Card>
-              <CardHeader>
-                <CardTitle>Recent Mood Trends</CardTitle>
-              </CardHeader>
-              <CardContent>
-                {studentMoods.length > 0 ? (
-                  <div className="text-center text-muted-foreground py-8">
-                    <TrendingUp className="h-8 w-8 mx-auto mb-2" />
-                    <p>Mood chart will be available soon</p>
-                  </div>
-                ) : (
-                  <p className="text-center text-muted-foreground py-8">
-                    No mood data available
-                  </p>
-                )}
-              </CardContent>
-            </Card>
+            <div>
+              <MoodChart 
+                data={getMoodTrendData(30)} 
+                title="30-Day Mood Trends"
+              />
+            </div>
 
             <Card>
               <CardHeader>
