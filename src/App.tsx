@@ -23,7 +23,6 @@ import MoodInsights from "./pages/counselor/MoodInsights";
 import NotFound from "./pages/NotFound";
 import ProtectedRoute from "./components/ProtectedRoute";
 import Index from "./pages/Index";
-import CalendarCallback from "./pages/CalendarCallback";
 
 const queryClient = new QueryClient();
 
@@ -37,7 +36,6 @@ const App = () => (
           {/* Public routes */}
           <Route path="/login" element={<Login />} />
           <Route path="/register" element={<Register />} />
-          <Route path="/calendar-callback" element={<CalendarCallback />} />
           
           {/* Student routes */}
           <Route 

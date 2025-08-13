@@ -1,12 +1,11 @@
 import Layout from "../../components/Layout";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Calendar, Clock, Users, Video, User } from "lucide-react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useAppointments } from "@/hooks/useAppointments";
 import { useCounselors } from "@/hooks/useCounselors";
-import { useGoogleCalendar } from "@/hooks/useGoogleCalendar";
 import { Link } from "react-router-dom";
 
 // Define getStatusBadge outside of components so it's accessible to all
@@ -28,7 +27,6 @@ const getStatusBadge = (status: string) => {
 const StudentAppointments = () => {
   const { appointments, isLoading, updateAppointmentStatus } = useAppointments();
   const { counselors } = useCounselors();
-  const { connectGoogleCalendar } = useGoogleCalendar();
   
   const pendingAppointments = appointments.filter(apt => apt.status === 'pending');
   const confirmedAppointments = appointments.filter(apt => apt.status === 'confirmed');
@@ -72,28 +70,6 @@ const StudentAppointments = () => {
         </p>
       </div>
       
-      {/* Google Calendar Integration */}
-      <Card className="mb-6">
-        <CardHeader>
-          <CardTitle className="flex items-center gap-2">
-            <Calendar className="h-5 w-5" />
-            Google Calendar Integration
-          </CardTitle>
-        </CardHeader>
-        <CardContent>
-          <p className="text-muted-foreground mb-4">
-            Connect your Google Calendar to automatically sync your appointments and get reminders.
-          </p>
-          <Button 
-            onClick={() => connectGoogleCalendar.mutate()}
-            disabled={connectGoogleCalendar.isPending}
-            className="mr-4"
-          >
-            {connectGoogleCalendar.isPending ? "Connecting..." : "Connect Google Calendar"}
-          </Button>
-        </CardContent>
-      </Card>
-
       <div className="flex justify-between items-center mb-6">
         <h2 className="text-xl font-semibold">All Appointments</h2>
         <Button asChild className="bridge-button-primary">

@@ -3,7 +3,6 @@ import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import { toast } from "sonner";
-import { useGoogleCalendar } from "./useGoogleCalendar";
 
 export type Appointment = {
   id: string;
@@ -20,7 +19,6 @@ export type Appointment = {
 export const useAppointments = () => {
   const { user } = useAuth();
   const queryClient = useQueryClient();
-  const { syncCalendarEvent } = useGoogleCalendar();
 
   const { data: appointments = [], isLoading } = useQuery({
     queryKey: ['appointments'],
@@ -75,17 +73,9 @@ export const useAppointments = () => {
 
       return data;
     },
-    onSuccess: (data) => {
+    onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['appointments'] });
       toast.success("Appointment request sent successfully");
-      
-      // Sync with Google Calendar
-      if (data?.id) {
-        syncCalendarEvent.mutate({
-          action: 'create',
-          appointmentId: data.id
-        });
-      }
     },
   });
 
@@ -105,17 +95,9 @@ export const useAppointments = () => {
 
       return data;
     },
-    onSuccess: (data) => {
+    onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['appointments'] });
       toast.success("Appointment updated successfully");
-      
-      // Sync with Google Calendar
-      if (data?.id) {
-        syncCalendarEvent.mutate({
-          action: 'update',
-          appointmentId: data.id
-        });
-      }
     },
   });
 
