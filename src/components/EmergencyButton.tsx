@@ -65,7 +65,7 @@ export function EmergencyButton() {
               <AlertDialogTrigger asChild>
                 <Button
                   className="w-full py-6 text-lg"
-                  variant="secondary"
+                  variant="destructive"
                 >
                   Call National Suicide Prevention Lifeline
                 </Button>
@@ -94,14 +94,14 @@ export function EmergencyButton() {
                   className="w-full py-6 text-lg"
                   variant="secondary"
                 >
-                  Call Counseling Office
+                  Call on-call counselor
                 </Button>
               </AlertDialogTrigger>
               <AlertDialogContent>
                 <AlertDialogHeader>
-                  <AlertDialogTitle>Call Counseling Office</AlertDialogTitle>
+                  <AlertDialogTitle>Call on-call counselor</AlertDialogTitle>
                   <AlertDialogDescription>
-                    This will initiate a call to the counseling office emergency number.
+                    This will initiate a call to the on-call counselor emergency number.
                   </AlertDialogDescription>
                 </AlertDialogHeader>
                 <AlertDialogFooter>
@@ -144,13 +144,6 @@ export function EmergencyButton() {
               </AlertDialog>
             )}
 
-            <Button
-              className="w-full py-6 text-lg"
-              variant="outline"
-              onClick={handleUrgentMessage}
-            >
-              Send Urgent Message
-            </Button>
           </div>
         </DialogContent>
       </Dialog>
