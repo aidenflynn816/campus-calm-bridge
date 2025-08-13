@@ -23,6 +23,7 @@ import MoodInsights from "./pages/counselor/MoodInsights";
 import NotFound from "./pages/NotFound";
 import ProtectedRoute from "./components/ProtectedRoute";
 import Index from "./pages/Index";
+import BookMeeting from "./pages/student/BookMeeting";
 
 const queryClient = new QueryClient();
 
@@ -83,6 +84,14 @@ const App = () => (
             element={
               <ProtectedRoute allowedRoles={["student"]}>
                 <MoodTracking />
+              </ProtectedRoute>
+            } 
+          />
+          <Route 
+            path="/student/book" 
+            element={
+              <ProtectedRoute allowedRoles={["student"]}>
+                <BookMeeting />
               </ProtectedRoute>
             } 
           />
