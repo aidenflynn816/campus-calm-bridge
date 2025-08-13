@@ -1,22 +1,41 @@
 import { createContext, useContext, useEffect, useState, ReactNode } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { toast } from 'sonner';
+import { supabase } from '@/integrations/supabase/client';
+import type { User as SupabaseUser, Session } from '@supabase/supabase-js';
+
+// Clean up auth state utility
+export const cleanupAuthState = () => {
+  Object.keys(localStorage).forEach((key) => {
+    if (key.startsWith('supabase.auth.') || key.includes('sb-')) {
+      localStorage.removeItem(key);
+    }
+  });
+  Object.keys(sessionStorage || {}).forEach((key) => {
+    if (key.startsWith('supabase.auth.') || key.includes('sb-')) {
+      sessionStorage.removeItem(key);
+    }
+  });
+};
 
 // Define types for our context
 interface User {
   id: string;
   email: string;
   role: 'student' | 'counselor';
-  name?: string;
-  profile_image?: string;
-  emergency_contact?: string; // Add this line
+  full_name?: string;
+  name?: string; // Backward compatibility
+  avatar_url?: string;
+  profile_image?: string; // Backward compatibility
+  emergency_contact?: string;
 }
 
 interface AuthContextType {
   user: User | null;
+  session: Session | null;
   isLoading: boolean;
   signIn: (email: string, password: string) => Promise<void>;
-  signUp: (email: string, password: string, role: 'student' | 'counselor', name: string) => Promise<void>;
+  signUp: (email: string, password: string, role: 'student' | 'counselor', fullName: string) => Promise<void>;
   signOut: () => Promise<void>;
 }
 
@@ -35,28 +54,82 @@ export const useAuth = () => {
 // Provider component
 export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const [user, setUser] = useState<User | null>(null);
+  const [session, setSession] = useState<Session | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const navigate = useNavigate();
 
-  // Check if user is logged in on initial load
+  // Fetch user profile from the profiles table
+  const fetchUserProfile = async (userId: string) => {
+    try {
+      const { data: profile, error } = await supabase
+        .from('profiles')
+        .select('*')
+        .eq('user_id', userId)
+        .single();
+
+      if (error) {
+        console.error('Error fetching user profile:', error);
+        return null;
+      }
+
+      return profile;
+    } catch (error) {
+      console.error('Error fetching user profile:', error);
+      return null;
+    }
+  };
+
+  // Initialize auth state
   useEffect(() => {
-    const checkUser = async () => {
-      try {
-        // In a real implementation, we would call Supabase to get the current session
-        // For now, we'll just check localStorage for demo purposes
-        const storedUser = localStorage.getItem('bridge_user');
+    // Set up auth state listener FIRST
+    const { data: { subscription } } = supabase.auth.onAuthStateChange(
+      async (event, session) => {
+        console.log('Auth state changed:', event, session?.user?.email);
         
-        if (storedUser) {
-          setUser(JSON.parse(storedUser));
+        setSession(session);
+        
+        if (session?.user) {
+          // Defer profile fetching to avoid deadlocks
+          setTimeout(async () => {
+            const profile = await fetchUserProfile(session.user.id);
+            if (profile) {
+              setUser({
+                id: session.user.id,
+                email: session.user.email!,
+                role: profile.role as 'student' | 'counselor',
+                full_name: profile.full_name,
+                name: profile.full_name, // Backward compatibility
+                avatar_url: profile.avatar_url,
+                profile_image: profile.avatar_url, // Backward compatibility
+              });
+            } else {
+              // Handle case where profile doesn't exist
+              setUser({
+                id: session.user.id,
+                email: session.user.email!,
+                role: 'student', // Default role
+                name: session.user.email, // Fallback name
+              });
+            }
+          }, 0);
+        } else {
+          setUser(null);
         }
-      } catch (error) {
-        console.error('Error checking authentication state:', error);
-      } finally {
+        
         setIsLoading(false);
       }
-    };
+    );
 
-    checkUser();
+    // THEN check for existing session
+    supabase.auth.getSession().then(({ data: { session } }) => {
+      // This will trigger the onAuthStateChange listener above
+      setSession(session);
+      if (!session) {
+        setIsLoading(false);
+      }
+    });
+
+    return () => subscription.unsubscribe();
   }, []);
 
   // Sign in function
@@ -64,29 +137,40 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     setIsLoading(true);
     
     try {
-      // In a real implementation, we would call Supabase auth.signIn here
-      // For now, we'll just simulate it for the demo
+      // Clean up any existing auth state first
+      cleanupAuthState();
       
-      // Simulate API call delay
-      await new Promise(resolve => setTimeout(resolve, 1000));
+      // Attempt global sign out first
+      try {
+        await supabase.auth.signOut({ scope: 'global' });
+      } catch (err) {
+        // Continue even if this fails
+      }
       
-      // Mock user data based on email (just for demonstration)
-      const isStudent = email.includes('student');
-      
-      const user: User = {
-        id: `user-${Math.random().toString(36).substr(2, 9)}`,
+      const { data, error } = await supabase.auth.signInWithPassword({
         email,
-        role: isStudent ? 'student' : 'counselor',
-        name: isStudent ? 'Alex Student' : 'Dr. Jamie Counselor',
-      };
-      
-      // Store the user in localStorage (in real app, Supabase would manage the session)
-      localStorage.setItem('bridge_user', JSON.stringify(user));
-      setUser(user);
-      
-      // Navigate to the appropriate dashboard
-      navigate(isStudent ? '/student' : '/counselor');
-      toast.success('Signed in successfully');
+        password,
+      });
+
+      if (error) {
+        if (error.message.includes('Invalid login credentials')) {
+          throw new Error('Invalid email or password');
+        } else if (error.message.includes('Email not confirmed')) {
+          throw new Error('Please check your email and confirm your account');
+        } else {
+          throw new Error(error.message);
+        }
+      }
+
+      if (data.user) {
+        // Get user profile to determine role and navigate
+        const profile = await fetchUserProfile(data.user.id);
+        const userRole = profile?.role || 'student';
+        
+        // Navigate to appropriate dashboard
+        navigate(userRole === 'student' ? '/student' : '/counselor');
+        toast.success('Signed in successfully');
+      }
     } catch (error: any) {
       console.error('Error signing in:', error);
       toast.error(error.message || 'Failed to sign in');
@@ -97,30 +181,67 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   };
 
   // Sign up function
-  const signUp = async (email: string, password: string, role: 'student' | 'counselor', name: string) => {
+  const signUp = async (email: string, password: string, role: 'student' | 'counselor', fullName: string) => {
     setIsLoading(true);
     
     try {
-      // In a real implementation, we would call Supabase auth.signUp here
-      // For now, we'll just simulate it for the demo
+      // Clean up any existing auth state first
+      cleanupAuthState();
       
-      // Simulate API call delay
-      await new Promise(resolve => setTimeout(resolve, 1000));
+      // Attempt global sign out first
+      try {
+        await supabase.auth.signOut({ scope: 'global' });
+      } catch (err) {
+        // Continue even if this fails
+      }
+
+      const redirectUrl = `${window.location.origin}/`;
       
-      const user: User = {
-        id: `user-${Math.random().toString(36).substr(2, 9)}`,
+      const { data, error } = await supabase.auth.signUp({
         email,
-        role,
-        name,
-      };
-      
-      // Store the user in localStorage (in real app, Supabase would handle this)
-      localStorage.setItem('bridge_user', JSON.stringify(user));
-      setUser(user);
-      
-      // Navigate to the appropriate dashboard
-      navigate(role === 'student' ? '/student' : '/counselor');
-      toast.success('Account created successfully');
+        password,
+        options: {
+          emailRedirectTo: redirectUrl,
+          data: {
+            full_name: fullName,
+            role: role,
+          },
+        },
+      });
+
+      if (error) {
+        if (error.message.includes('User already registered')) {
+          throw new Error('An account with this email already exists');
+        } else {
+          throw new Error(error.message);
+        }
+      }
+
+      if (data.user) {
+        // Create profile record
+        const { error: profileError } = await supabase
+          .from('profiles')
+          .insert({
+            user_id: data.user.id,
+            full_name: fullName,
+            role: role,
+          });
+
+        if (profileError) {
+          console.error('Error creating profile:', profileError);
+          // Don't throw here, as the user account was created successfully
+        }
+
+        // If user is immediately confirmed (email confirmation disabled)
+        if (data.session) {
+          navigate(role === 'student' ? '/student' : '/counselor');
+          toast.success('Account created successfully');
+        } else {
+          // User needs to confirm email
+          toast.success('Account created! Please check your email to confirm your account.');
+          navigate('/login');
+        }
+      }
     } catch (error: any) {
       console.error('Error signing up:', error);
       toast.error(error.message || 'Failed to create account');
@@ -133,15 +254,22 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   // Sign out function
   const signOut = async () => {
     try {
-      // In a real implementation, we would call Supabase auth.signOut here
+      // Clean up auth state first
+      cleanupAuthState();
       
-      // Clear stored user data
-      localStorage.removeItem('bridge_user');
+      // Attempt global sign out
+      try {
+        await supabase.auth.signOut({ scope: 'global' });
+      } catch (err) {
+        // Continue even if this fails
+      }
+      
+      // Clear local state
       setUser(null);
+      setSession(null);
       
-      // Navigate to login page
-      navigate('/login');
-      toast.success('Signed out successfully');
+      // Force page reload for clean state
+      window.location.href = '/login';
     } catch (error) {
       console.error('Error signing out:', error);
       toast.error('Failed to sign out');
@@ -150,6 +278,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
 
   const value = {
     user,
+    session,
     isLoading,
     signIn,
     signUp,

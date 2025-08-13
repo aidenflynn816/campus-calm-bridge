@@ -21,6 +21,7 @@ import MoodTracking from "./pages/student/MoodTracking";
 import MoodInsights from "./pages/counselor/MoodInsights";
 import NotFound from "./pages/NotFound";
 import ProtectedRoute from "./components/ProtectedRoute";
+import Index from "./pages/Index";
 
 const queryClient = new QueryClient();
 
@@ -135,10 +136,10 @@ const App = () => (
             } 
           />
           
-          {/* Redirect from / to the appropriate dashboard based on role */}
+          {/* Home page with auth redirect */}
           <Route 
             path="/" 
-            element={<Navigate to="/login" replace />} 
+            element={<Index />} 
           />
           
           {/* Catch-all route */}

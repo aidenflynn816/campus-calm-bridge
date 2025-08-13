@@ -1,12 +1,22 @@
 
-import { useState } from "react";
-import { Link } from "react-router-dom";
+import { useState, useEffect } from "react";
+import { Link, useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { motion } from "framer-motion";
 import { ArrowRight, Clock, MessageCircle, BookOpen } from "lucide-react";
+import { useAuth } from "@/contexts/AuthContext";
 
 const Index = () => {
   const [isHovered, setIsHovered] = useState(false);
+  const { user } = useAuth();
+  const navigate = useNavigate();
+
+  // Redirect authenticated users to their dashboard
+  useEffect(() => {
+    if (user) {
+      navigate(user.role === 'student' ? '/student' : '/counselor');
+    }
+  }, [user, navigate]);
   
   return (
     <div className="min-h-screen bg-gradient-to-b from-bridge-background to-bridge-secondary/20">
@@ -52,23 +62,23 @@ const Index = () => {
             onMouseEnter={() => setIsHovered(true)}
             onMouseLeave={() => setIsHovered(false)}
           >
-            <Button 
-              asChild 
-              className="bridge-button-primary text-lg px-8 py-6 group"
-            >
-              <Link to="/login">
-                Sign In
+            <Link to="/register">
+              <Button 
+                className="bridge-button-primary text-lg px-8 py-6 group"
+              >
+                Get Started
                 <ArrowRight className={`ml-2 transition-transform duration-300 ${isHovered ? "transform translate-x-1" : ""}`} />
-              </Link>
-            </Button>
+              </Button>
+            </Link>
             
-            <Button
-              asChild
-              variant="outline"
-              className="border-bridge-primary/30 text-bridge-primary hover:bg-bridge-primary/5 text-lg px-8 py-6"
-            >
-              <Link to="/register">Create Account</Link>
-            </Button>
+            <Link to="/login">
+              <Button
+                variant="outline"
+                className="border-bridge-primary/30 text-bridge-primary hover:bg-bridge-primary/5 text-lg px-8 py-6"
+              >
+                Sign In
+              </Button>
+            </Link>
           </motion.div>
         </div>
         
