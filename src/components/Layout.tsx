@@ -44,9 +44,7 @@ const Layout = ({ children }: LayoutProps) => {
   const navItems = user?.role === 'student' 
     ? [
         { path: '/student', icon: <Home size={20} />, label: 'Dashboard' },
-        { path: '/student/book', icon: <Calendar size={20} />, label: 'Book Meeting' },
-        { path: '/student/appointments', icon: <Calendar size={20} />, label: 'Appointments' },
-        { path: '/student/messages', icon: <MessageSquare size={20} />, label: 'Messages' },
+        { path: '/student/counselors', icon: <Users size={20} />, label: 'Counselors' },
         { path: '/student/resources', icon: <BookOpen size={20} />, label: 'Resources' },
         { path: '/student/mood', icon: <SmilePlus size={20} />, label: 'Mood Check-in' },
       ]

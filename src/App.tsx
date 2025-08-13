@@ -9,10 +9,8 @@ import Login from "./pages/Login";
 import Register from "./pages/Register";
 import StudentDashboard from "./pages/student/Dashboard";
 import CounselorDashboard from "./pages/counselor/Dashboard";
-import BookMeeting from "./pages/student/BookMeeting";
-import Messages from "./pages/student/Messages";
+import StudentCounselors from "./pages/student/Counselors";
 import Resources from "./pages/student/Resources";
-import StudentAppointments from "./pages/student/Appointments";
 import CounselorAppointments from "./pages/counselor/Appointments";
 import CounselorMessages from "./pages/counselor/Messages";
 import CounselorResources from "./pages/counselor/Resources";
@@ -46,18 +44,10 @@ const App = () => (
             } 
           />
           <Route 
-            path="/student/book" 
+            path="/student/counselors" 
             element={
               <ProtectedRoute allowedRoles={["student"]}>
-                <BookMeeting />
-              </ProtectedRoute>
-            } 
-          />
-          <Route 
-            path="/student/messages" 
-            element={
-              <ProtectedRoute allowedRoles={["student"]}>
-                <Messages />
+                <StudentCounselors />
               </ProtectedRoute>
             } 
           />
@@ -66,14 +56,6 @@ const App = () => (
             element={
               <ProtectedRoute allowedRoles={["student"]}>
                 <Resources />
-              </ProtectedRoute>
-            } 
-          />
-          <Route 
-            path="/student/appointments" 
-            element={
-              <ProtectedRoute allowedRoles={["student"]}>
-                <StudentAppointments />
               </ProtectedRoute>
             } 
           />
