@@ -42,9 +42,12 @@ const BookMeeting = () => {
     document.body.appendChild(script);
 
     return () => {
-      document.body.removeChild(script);
+      if (document.body.contains(script)) {
+        document.body.removeChild(script);
+      }
     };
   }, []);
+
   
   return (
     <Layout>
@@ -69,17 +72,12 @@ const BookMeeting = () => {
           </CardHeader>
           <CardContent>
             {selectedCounselorData?.calendlyUrl ? (
-              <div className="min-h-[600px]">
+              <div className="min-h-[600px]" key={selectedCounselor}>
                 <div 
                   className="calendly-inline-widget" 
                   data-url={selectedCounselorData.calendlyUrl}
                   style={{ minWidth: '320px', height: '600px' }}
                 ></div>
-                <script 
-                  type="text/javascript" 
-                  src="https://assets.calendly.com/assets/external/widget.js" 
-                  async
-                ></script>
               </div>
             ) : selectedCounselorData ? (
               <div className="flex items-center justify-center h-96 bg-bridge-muted/20 rounded-2xl">
