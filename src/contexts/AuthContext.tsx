@@ -163,12 +163,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       }
 
       if (data.user) {
-        // Get user profile to determine role and navigate
-        const profile = await fetchUserProfile(data.user.id);
-        const userRole = profile?.role || 'student';
-        
-        // Navigate to appropriate dashboard
-        navigate(userRole === 'student' ? '/student' : '/counselor');
+        // Don't navigate here - let the auth state change handle routing
         toast.success('Signed in successfully');
       }
     } catch (error: any) {
