@@ -1,6 +1,7 @@
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
+import { Frown, Meh, Smile, SmilePlus, FrownIcon as FrownSad } from "lucide-react";
 
 export interface MoodCheckin {
   id: string;
@@ -19,11 +20,51 @@ export interface CreateMoodCheckinData {
 }
 
 export const MOOD_OPTIONS = [
-  { rating: 1, emoji: "😢", label: "Very Sad", color: "bg-red-500" },
-  { rating: 2, emoji: "😔", label: "Sad", color: "bg-orange-500" },
-  { rating: 3, emoji: "😐", label: "Neutral", color: "bg-yellow-500" },
-  { rating: 4, emoji: "🙂", label: "Happy", color: "bg-green-500" },
-  { rating: 5, emoji: "😊", label: "Very Happy", color: "bg-emerald-500" },
+  { 
+    rating: 1, 
+    emoji: "very-sad", 
+    label: "Very Sad", 
+    color: "text-red-500",
+    bgColor: "bg-red-500",
+    icon: Frown,
+    description: "Feeling really down"
+  },
+  { 
+    rating: 2, 
+    emoji: "sad", 
+    label: "Sad", 
+    color: "text-orange-500",
+    bgColor: "bg-orange-500",
+    icon: FrownSad,
+    description: "Feeling low"
+  },
+  { 
+    rating: 3, 
+    emoji: "neutral", 
+    label: "Neutral", 
+    color: "text-yellow-500",
+    bgColor: "bg-yellow-500",
+    icon: Meh,
+    description: "Feeling okay"
+  },
+  { 
+    rating: 4, 
+    emoji: "happy", 
+    label: "Happy", 
+    color: "text-green-500",
+    bgColor: "bg-green-500",
+    icon: Smile,
+    description: "Feeling good"
+  },
+  { 
+    rating: 5, 
+    emoji: "very-happy", 
+    label: "Very Happy", 
+    color: "text-emerald-500",
+    bgColor: "bg-emerald-500",
+    icon: SmilePlus,
+    description: "Feeling amazing"
+  },
 ];
 
 export const useMoodCheckins = () => {

@@ -22,7 +22,12 @@ const MoodChart = ({ data, title = "Mood Trend" }: MoodChartProps) => {
         <div className="bg-white border border-border rounded-lg shadow-lg p-3">
           <p className="font-medium">{label}</p>
           <div className="flex items-center gap-2 mt-1">
-            <span className="text-2xl">{data.emoji}</span>
+            {moodOption && (
+              <moodOption.icon 
+                size={20} 
+                className={moodOption.color}
+              />
+            )}
             <span className="text-sm text-bridge-text/70">
               {moodOption?.label || `Mood ${data.mood}`}
             </span>
@@ -40,7 +45,7 @@ const MoodChart = ({ data, title = "Mood Trend" }: MoodChartProps) => {
 
   const formatYAxisTick = (value: number): string => {
     const moodOption = MOOD_OPTIONS.find(option => option.rating === value);
-    return moodOption?.emoji || value.toString();
+    return moodOption?.label.charAt(0) || value.toString();
   };
 
   if (data.length === 0) {
@@ -99,10 +104,10 @@ const MoodChart = ({ data, title = "Mood Trend" }: MoodChartProps) => {
         </div>
         
         {/* Legend */}
-        <div className="flex justify-center gap-4 mt-4 text-sm">
+        <div className="flex justify-center gap-4 mt-4 text-sm flex-wrap">
           {MOOD_OPTIONS.map(option => (
             <div key={option.rating} className="flex items-center gap-1">
-              <span className="text-lg">{option.emoji}</span>
+              <option.icon size={18} className={option.color} />
               <span className="text-bridge-text/70">{option.label}</span>
             </div>
           ))}

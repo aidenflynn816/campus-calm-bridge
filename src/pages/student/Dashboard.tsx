@@ -82,7 +82,14 @@ const StudentDashboard = () => {
             {todayCheckin ? (
               <div className="space-y-4">
                 <div className="flex items-center gap-3">
-                  <span className="text-4xl">{todayCheckin.mood_emoji}</span>
+                  {(() => {
+                    const moodOption = MOOD_OPTIONS.find(option => option.rating === todayCheckin.mood_rating);
+                    return moodOption ? (
+                      <div className={`p-3 rounded-lg ${moodOption.bgColor}/10 border border-${moodOption.color.replace('text-', '')}/20`}>
+                        <moodOption.icon size={32} className={moodOption.color} />
+                      </div>
+                    ) : null;
+                  })()}
                   <div>
                     <p className="font-medium">
                       {MOOD_OPTIONS.find(option => option.rating === todayCheckin.mood_rating)?.label}
@@ -109,10 +116,12 @@ const StudentDashboard = () => {
                     <Button 
                       key={option.rating}
                       variant="outline" 
-                      className="flex-1 h-12 text-2xl"
+                      className={`flex-1 h-12 hover:${option.bgColor}/10 hover:border-${option.color.replace('text-', '')}/30 transition-all`}
                       asChild
                     >
-                      <Link to="/student/mood">{option.emoji}</Link>
+                      <Link to="/student/mood" className="flex items-center justify-center">
+                        <option.icon size={24} className={option.color} />
+                      </Link>
                     </Button>
                   ))}
                 </div>
@@ -189,14 +198,19 @@ const StudentDashboard = () => {
           <CardContent>
             {recentMoodHistory.length > 0 ? (
               <div className="flex justify-between items-center">
-                {recentMoodHistory.slice(-7).map((day, index) => (
-                  <div key={index} className="flex flex-col items-center">
-                    <div className="text-2xl mb-1">{day.emoji}</div>
-                    <div className="text-xs text-bridge-text/70">
-                      {new Date(day.date).toLocaleDateString(undefined, { weekday: 'short' })}
+                {recentMoodHistory.slice(-7).map((day, index) => {
+                  const moodOption = MOOD_OPTIONS.find(option => option.rating === day.mood);
+                  return (
+                    <div key={index} className="flex flex-col items-center">
+                      <div className={`p-2 rounded-lg ${moodOption?.bgColor}/10 border border-${moodOption?.color.replace('text-', '')}/20 mb-1`}>
+                        {moodOption && <moodOption.icon size={20} className={moodOption.color} />}
+                      </div>
+                      <div className="text-xs text-bridge-text/70">
+                        {new Date(day.date).toLocaleDateString(undefined, { weekday: 'short' })}
+                      </div>
                     </div>
-                  </div>
-                ))}
+                  );
+                 })}
               </div>
             ) : (
               <div className="text-center py-4 text-bridge-text/60">

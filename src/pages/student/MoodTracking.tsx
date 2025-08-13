@@ -123,7 +123,14 @@ const MoodTracking = () => {
             {todayCheckin ? (
               <div className="space-y-4">
                 <div className="flex items-center gap-4">
-                  <span className="text-6xl">{todayCheckin.mood_emoji}</span>
+                  {(() => {
+                    const moodOption = MOOD_OPTIONS.find(option => option.rating === todayCheckin.mood_rating);
+                    return moodOption ? (
+                      <div className={`p-4 rounded-xl ${moodOption.bgColor}/10 border-2 border-${moodOption.color.replace('text-', '')}/20`}>
+                        <moodOption.icon size={48} className={moodOption.color} />
+                      </div>
+                    ) : null;
+                  })()}
                   <div>
                     <p className="text-lg font-medium">
                       {MOOD_OPTIONS.find(option => option.rating === todayCheckin.mood_rating)?.label}
@@ -160,12 +167,14 @@ const MoodTracking = () => {
                                 <Button
                                   key={option.rating}
                                   variant={selectedMood === option.rating ? "default" : "outline"}
-                                  className={`h-16 flex flex-col gap-1 ${
-                                    selectedMood === option.rating ? "bg-bridge-primary text-white" : ""
+                                  className={`h-16 flex flex-col gap-1 transition-all ${
+                                    selectedMood === option.rating 
+                                      ? `${option.bgColor} text-white hover:${option.bgColor}/90` 
+                                      : `hover:${option.bgColor}/10 hover:border-${option.color.replace('text-', '')}/30`
                                   }`}
                                   onClick={() => setSelectedMood(option.rating)}
                                 >
-                                  <span className="text-2xl">{option.emoji}</span>
+                                  <option.icon size={24} className={selectedMood === option.rating ? "text-white" : option.color} />
                                   <span className="text-xs">{option.label}</span>
                                 </Button>
                               ))}
@@ -217,12 +226,14 @@ const MoodTracking = () => {
                       <Button
                         key={option.rating}
                         variant={selectedMood === option.rating ? "default" : "outline"}
-                        className={`h-20 flex flex-col gap-2 ${
-                          selectedMood === option.rating ? "bg-bridge-primary text-white" : ""
+                        className={`h-20 flex flex-col gap-2 transition-all ${
+                          selectedMood === option.rating 
+                            ? `${option.bgColor} text-white hover:${option.bgColor}/90` 
+                            : `hover:${option.bgColor}/10 hover:border-${option.color.replace('text-', '')}/30`
                         }`}
                         onClick={() => setSelectedMood(option.rating)}
                       >
-                        <span className="text-3xl">{option.emoji}</span>
+                        <option.icon size={28} className={selectedMood === option.rating ? "text-white" : option.color} />
                         <span className="text-xs text-center">{option.label}</span>
                       </Button>
                     ))}
@@ -282,17 +293,24 @@ const MoodTracking = () => {
                     {moodCheckins.map((checkin) => (
                       <div key={checkin.id} className="border border-border rounded-lg p-4 hover:bg-bridge-muted/20 transition-colors">
                         <div className="flex items-start justify-between">
-                          <div className="flex items-start gap-4">
-                            <span className="text-3xl">{checkin.mood_emoji}</span>
-                            <div className="flex-1">
-                              <div className="flex items-center gap-2 mb-1">
-                                <p className="font-medium">
-                                  {MOOD_OPTIONS.find(option => option.rating === checkin.mood_rating)?.label}
-                                </p>
-                                <Badge variant="outline" className="text-xs">
-                                  {checkin.mood_rating}/5
-                                </Badge>
+                        <div className="flex items-start gap-4">
+                          {(() => {
+                            const moodOption = MOOD_OPTIONS.find(option => option.rating === checkin.mood_rating);
+                            return moodOption ? (
+                              <div className={`p-3 rounded-lg ${moodOption.bgColor}/10 border border-${moodOption.color.replace('text-', '')}/20`}>
+                                <moodOption.icon size={24} className={moodOption.color} />
                               </div>
+                            ) : null;
+                          })()}
+                          <div className="flex-1">
+                            <div className="flex items-center gap-2 mb-1">
+                              <p className="font-medium">
+                                {MOOD_OPTIONS.find(option => option.rating === checkin.mood_rating)?.label}
+                              </p>
+                              <Badge variant="outline" className="text-xs">
+                                {checkin.mood_rating}/5
+                              </Badge>
+                            </div>
                               <div className="flex items-center gap-2 text-sm text-bridge-text/60 mb-2">
                                 <Clock size={14} />
                                 <span>{format(new Date(checkin.created_at), "MMM d, yyyy 'at' h:mm a")}</span>
@@ -323,23 +341,25 @@ const MoodTracking = () => {
                                     </p>
                                   </div>
                                   
-                                  <div className="space-y-4">
-                                    <div>
-                                      <label className="text-sm font-medium mb-3 block">Mood</label>
-                                      <div className="grid grid-cols-5 gap-3">
-                                        {MOOD_OPTIONS.map((option) => (
-                                          <Button
-                                            key={option.rating}
-                                            variant={selectedMood === option.rating ? "default" : "outline"}
-                                            className={`h-16 flex flex-col gap-1 ${
-                                              selectedMood === option.rating ? "bg-bridge-primary text-white" : ""
-                                            }`}
-                                            onClick={() => setSelectedMood(option.rating)}
-                                          >
-                                            <span className="text-2xl">{option.emoji}</span>
-                                            <span className="text-xs">{option.label}</span>
-                                          </Button>
-                                        ))}
+                                    <div className="space-y-4">
+                                      <div>
+                                        <label className="text-sm font-medium mb-3 block">Mood</label>
+                                        <div className="grid grid-cols-5 gap-3">
+                                          {MOOD_OPTIONS.map((option) => (
+                                            <Button
+                                              key={option.rating}
+                                              variant={selectedMood === option.rating ? "default" : "outline"}
+                                              className={`h-16 flex flex-col gap-1 transition-all ${
+                                                selectedMood === option.rating 
+                                                  ? `${option.bgColor} text-white hover:${option.bgColor}/90` 
+                                                  : `hover:${option.bgColor}/10 hover:border-${option.color.replace('text-', '')}/30`
+                                              }`}
+                                              onClick={() => setSelectedMood(option.rating)}
+                                            >
+                                              <option.icon size={24} className={selectedMood === option.rating ? "text-white" : option.color} />
+                                              <span className="text-xs">{option.label}</span>
+                                            </Button>
+                                          ))}
                                       </div>
                                     </div>
                                     
