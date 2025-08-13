@@ -29,6 +29,7 @@ interface User {
   avatar_url?: string;
   profile_image?: string; // Backward compatibility
   emergency_contact?: string;
+  calendly_url?: string;
 }
 
 interface AuthContextType {
@@ -110,6 +111,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
                   name: profile.full_name,
                   avatar_url: profile.avatar_url,
                   profile_image: profile.avatar_url,
+                  calendly_url: profile.calendly_url,
                 };
               } else {
                 newUser = {

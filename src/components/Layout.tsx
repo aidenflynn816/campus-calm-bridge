@@ -41,12 +41,13 @@ const Layout = ({ children }: LayoutProps) => {
     return location.pathname === path;
   };
   
-  const navItems = user?.role === 'student' 
+  const navItems = user?.role === 'student'
     ? [
         { path: '/student', icon: <Home size={20} />, label: 'Dashboard' },
         { path: '/student/counselors', icon: <Users size={20} />, label: 'Counselors' },
         { path: '/student/resources', icon: <BookOpen size={20} />, label: 'Resources' },
         { path: '/student/mood', icon: <SmilePlus size={20} />, label: 'Mood Check-in' },
+        { path: '/student/profile', icon: <User size={20} />, label: 'Profile' },
       ]
     : [
         { path: '/counselor', icon: <Home size={20} />, label: 'Dashboard' },
@@ -54,6 +55,7 @@ const Layout = ({ children }: LayoutProps) => {
         { path: '/counselor/messages', icon: <MessageSquare size={20} />, label: 'Messages' },
         { path: '/counselor/resources', icon: <BookOpen size={20} />, label: 'Resources' },
         { path: '/counselor/mood-insights', icon: <BarChart size={20} />, label: 'Mood Insights' },
+        { path: '/counselor/profile', icon: <User size={20} />, label: 'Profile' },
       ];
 
   const sidebarVariants = {

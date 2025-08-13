@@ -24,6 +24,8 @@ import NotFound from "./pages/NotFound";
 import ProtectedRoute from "./components/ProtectedRoute";
 import Index from "./pages/Index";
 import BookMeeting from "./pages/student/BookMeeting";
+import StudentProfile from "./pages/student/Profile";
+import CounselorProfile from "./pages/counselor/Profile";
 
 const queryClient = new QueryClient();
 
@@ -95,6 +97,14 @@ const App = () => (
               </ProtectedRoute>
             } 
           />
+          <Route 
+            path="/student/profile" 
+            element={
+              <ProtectedRoute allowedRoles={["student"]}>
+                <StudentProfile />
+              </ProtectedRoute>
+            } 
+          />
           
           {/* Counselor routes */}
           <Route 
@@ -150,6 +160,14 @@ const App = () => (
             element={
               <ProtectedRoute allowedRoles={["counselor"]}>
                 <MoodInsights />
+              </ProtectedRoute>
+            } 
+          />
+          <Route 
+            path="/counselor/profile" 
+            element={
+              <ProtectedRoute allowedRoles={["counselor"]}>
+                <CounselorProfile />
               </ProtectedRoute>
             } 
           />
