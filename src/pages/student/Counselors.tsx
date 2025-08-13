@@ -31,7 +31,18 @@ export default function StudentCounselors() {
   ];
 
   const handleBookAppointment = async () => {
-    if (!appointmentDate || !appointmentTime || !selectedCounselorId) return;
+    if (!appointmentDate || !appointmentTime || !selectedCounselorId) {
+      console.log("Missing required fields:", { appointmentDate, appointmentTime, selectedCounselorId });
+      toast.error("Please fill in all required fields");
+      return;
+    }
+    
+    console.log("Booking appointment with data:", {
+      counselor_id: selectedCounselorId,
+      date: appointmentDate,
+      time: appointmentTime,
+      reason: appointmentReason
+    });
     
     try {
       await createAppointment.mutateAsync({
@@ -46,7 +57,8 @@ export default function StudentCounselors() {
       setAppointmentDialogOpen(false);
       toast.success("Appointment request sent!");
     } catch (error) {
-      toast.error("Failed to book appointment");
+      console.error("Appointment booking error:", error);
+      toast.error(`Failed to book appointment: ${error instanceof Error ? error.message : 'Unknown error'}`);
     }
   };
 

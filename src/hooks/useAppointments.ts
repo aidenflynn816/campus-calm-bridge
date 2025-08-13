@@ -40,6 +40,12 @@ export const useAppointments = () => {
 
   const createAppointment = useMutation({
     mutationFn: async (newAppointment: Omit<Appointment, 'id' | 'created_at' | 'updated_at' | 'status' | 'student_id'>) => {
+      console.log("Creating appointment with data:", {
+        ...newAppointment,
+        student_id: user?.id,
+        status: 'pending'
+      });
+
       const { data, error } = await supabase
         .from('appointments')
         .insert({
@@ -48,15 +54,21 @@ export const useAppointments = () => {
           status: 'pending'
         })
         .select()
-        .single();
+        .maybeSingle();
 
       if (error) {
+        console.error("Supabase error:", error);
         if (error.message.includes('already booked')) {
           toast.error("This time slot is already booked");
         } else {
-          toast.error("Error creating appointment");
+          toast.error(`Error creating appointment: ${error.message}`);
         }
         throw error;
+      }
+
+      if (!data) {
+        console.error("No data returned from appointment creation");
+        throw new Error("Failed to create appointment - no data returned");
       }
 
       return data;
