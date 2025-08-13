@@ -1,0 +1,190 @@
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { supabase } from "@/integrations/supabase/client";
+import { useToast } from "@/hooks/use-toast";
+
+export interface MoodCheckin {
+  id: string;
+  user_id: string;
+  mood_rating: number;
+  mood_emoji: string;
+  notes?: string;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface CreateMoodCheckinData {
+  mood_rating: number;
+  mood_emoji: string;
+  notes?: string;
+}
+
+export const MOOD_OPTIONS = [
+  { rating: 1, emoji: "😢", label: "Very Sad", color: "bg-red-500" },
+  { rating: 2, emoji: "😔", label: "Sad", color: "bg-orange-500" },
+  { rating: 3, emoji: "😐", label: "Neutral", color: "bg-yellow-500" },
+  { rating: 4, emoji: "🙂", label: "Happy", color: "bg-green-500" },
+  { rating: 5, emoji: "😊", label: "Very Happy", color: "bg-emerald-500" },
+];
+
+export const useMoodCheckins = () => {
+  const { toast } = useToast();
+  const queryClient = useQueryClient();
+
+  const { data: moodCheckins = [], isLoading, error } = useQuery({
+    queryKey: ['mood-checkins'],
+    queryFn: async () => {
+      try {
+        const { data: user } = await supabase.auth.getUser();
+        if (!user.user) throw new Error('Not authenticated');
+
+        const { data, error } = await supabase
+          .from('mood_check_ins')
+          .select('*')
+          .eq('user_id', user.user.id)
+          .order('created_at', { ascending: false });
+
+        if (error) {
+          console.error('Error fetching mood check-ins:', error);
+          throw error;
+        }
+
+        return (data || []) as MoodCheckin[];
+      } catch (error) {
+        console.error('Error fetching mood check-ins:', error);
+        toast({
+          variant: "destructive",
+          title: "Error fetching mood check-ins",
+          description: error instanceof Error ? error.message : "Unknown error"
+        });
+        return [];
+      }
+    },
+  });
+
+  const createMoodCheckin = useMutation({
+    mutationFn: async (data: CreateMoodCheckinData) => {
+      const { data: user } = await supabase.auth.getUser();
+      if (!user.user) throw new Error('Not authenticated');
+
+      const { data: checkin, error } = await supabase
+        .from('mood_check_ins')
+        .insert([
+          {
+            user_id: user.user.id,
+            mood_rating: data.mood_rating,
+            mood_emoji: data.mood_emoji,
+            notes: data.notes,
+          }
+        ])
+        .select()
+        .single();
+
+      if (error) throw error;
+      return checkin;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['mood-checkins'] });
+      toast({
+        title: "Mood check-in recorded!",
+        description: "Your mood has been successfully logged."
+      });
+    },
+    onError: (error) => {
+      console.error('Error creating mood check-in:', error);
+      toast({
+        variant: "destructive",
+        title: "Error recording mood",
+        description: error instanceof Error ? error.message : "Unknown error"
+      });
+    },
+  });
+
+  const updateMoodCheckin = useMutation({
+    mutationFn: async ({ id, data }: { id: string; data: Partial<CreateMoodCheckinData> }) => {
+      const { data: checkin, error } = await supabase
+        .from('mood_check_ins')
+        .update(data)
+        .eq('id', id)
+        .select()
+        .single();
+
+      if (error) throw error;
+      return checkin;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['mood-checkins'] });
+      toast({
+        title: "Mood check-in updated!",
+        description: "Your mood has been successfully updated."
+      });
+    },
+    onError: (error) => {
+      console.error('Error updating mood check-in:', error);
+      toast({
+        variant: "destructive",
+        title: "Error updating mood",
+        description: error instanceof Error ? error.message : "Unknown error"
+      });
+    },
+  });
+
+  const deleteMoodCheckin = useMutation({
+    mutationFn: async (id: string) => {
+      const { error } = await supabase
+        .from('mood_check_ins')
+        .delete()
+        .eq('id', id);
+
+      if (error) throw error;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['mood-checkins'] });
+      toast({
+        title: "Mood check-in deleted",
+        description: "Your mood check-in has been deleted."
+      });
+    },
+    onError: (error) => {
+      console.error('Error deleting mood check-in:', error);
+      toast({
+        variant: "destructive",
+        title: "Error deleting mood check-in",
+        description: error instanceof Error ? error.message : "Unknown error"
+      });
+    },
+  });
+
+  // Get today's mood check-in
+  const todayCheckin = moodCheckins.find(checkin => {
+    const today = new Date().toDateString();
+    const checkinDate = new Date(checkin.created_at).toDateString();
+    return today === checkinDate;
+  });
+
+  // Get mood trend data for charts
+  const getMoodTrendData = (days: number = 30) => {
+    const cutoffDate = new Date();
+    cutoffDate.setDate(cutoffDate.getDate() - days);
+    
+    return moodCheckins
+      .filter(checkin => new Date(checkin.created_at) >= cutoffDate)
+      .sort((a, b) => new Date(a.created_at).getTime() - new Date(b.created_at).getTime())
+      .map(checkin => ({
+        date: new Date(checkin.created_at).toLocaleDateString(),
+        mood: checkin.mood_rating,
+        emoji: checkin.mood_emoji,
+        notes: checkin.notes,
+      }));
+  };
+
+  return {
+    moodCheckins,
+    isLoading,
+    error,
+    createMoodCheckin,
+    updateMoodCheckin,
+    deleteMoodCheckin,
+    todayCheckin,
+    getMoodTrendData,
+  };
+};

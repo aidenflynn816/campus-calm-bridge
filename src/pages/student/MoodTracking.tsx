@@ -1,171 +1,417 @@
-
 import { useState } from "react";
+import { format } from "date-fns";
 import Layout from "../../components/Layout";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Textarea } from "@/components/ui/textarea";
-import { toast } from "sonner";
+import { Badge } from "@/components/ui/badge";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Calendar, Clock, Edit, Trash2 } from "lucide-react";
+import { Dialog, DialogContent, DialogTrigger } from "@/components/ui/dialog";
+import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from "@/components/ui/alert-dialog";
+import { useMoodCheckins, MOOD_OPTIONS, type CreateMoodCheckinData } from "@/hooks/useMoodCheckins";
+import MoodChart from "@/components/MoodChart";
 
 const MoodTracking = () => {
-  const [selectedMood, setSelectedMood] = useState<string | null>(null);
-  const [note, setNote] = useState("");
+  const [selectedMood, setSelectedMood] = useState<number | null>(null);
+  const [notes, setNotes] = useState("");
+  const [editingCheckin, setEditingCheckin] = useState<any>(null);
   
-  // Mock data for mood history
-  const moodHistory = [
-    { id: 1, date: "2025-04-24", mood: "happy", note: "Had a good day today. Did well on my math test." },
-    { id: 2, date: "2025-04-23", mood: "neutral", note: "Just an ordinary day, nothing special." },
-    { id: 3, date: "2025-04-22", mood: "sad", note: "Feeling overwhelmed with assignments." },
-    { id: 4, date: "2025-04-21", mood: "happy", note: "Spent time with friends, felt good." },
-    { id: 5, date: "2025-04-20", mood: "happy", note: "Went for a long walk outside. Weather was nice." },
-    { id: 6, date: "2025-04-19", mood: "neutral", note: "Studied most of the day." },
-    { id: 7, date: "2025-04-18", mood: "sad", note: "Missed home today." },
-  ];
-  
-  // Function to render mood emoji
-  const renderMoodEmoji = (mood: string) => {
-    switch (mood) {
-      case "happy":
-        return "😊";
-      case "neutral":
-        return "😐";
-      case "sad":
-        return "😔";
-      default:
-        return "❓";
-    }
-  };
-  
-  const handleSubmit = () => {
-    if (!selectedMood) {
-      toast.error("Please select how you're feeling");
-      return;
-    }
-    
-    // Here we would normally send this data to the Supabase backend
-    toast.success("Mood check-in recorded!");
-    
-    // Reset form
-    setSelectedMood(null);
-    setNote("");
-  };
-  
-  // Format date for display
-  const formatDate = (dateString: string) => {
-    const date = new Date(dateString);
-    return date.toLocaleDateString('en-US', { 
-      month: 'short', 
-      day: 'numeric', 
-      weekday: 'short'
+  const { 
+    moodCheckins, 
+    isLoading, 
+    createMoodCheckin, 
+    updateMoodCheckin, 
+    deleteMoodCheckin, 
+    todayCheckin,
+    getMoodTrendData 
+  } = useMoodCheckins();
+
+  const handleSubmitMood = () => {
+    if (!selectedMood) return;
+
+    const selectedOption = MOOD_OPTIONS.find(option => option.rating === selectedMood);
+    if (!selectedOption) return;
+
+    const data: CreateMoodCheckinData = {
+      mood_rating: selectedMood,
+      mood_emoji: selectedOption.emoji,
+      notes: notes.trim() || undefined,
+    };
+
+    createMoodCheckin.mutate(data, {
+      onSuccess: () => {
+        setSelectedMood(null);
+        setNotes("");
+      }
     });
   };
-  
+
+  const handleUpdateMood = () => {
+    if (!editingCheckin || !selectedMood) return;
+
+    const selectedOption = MOOD_OPTIONS.find(option => option.rating === selectedMood);
+    if (!selectedOption) return;
+
+    const data = {
+      mood_rating: selectedMood,
+      mood_emoji: selectedOption.emoji,
+      notes: notes.trim() || undefined,
+    };
+
+    updateMoodCheckin.mutate(
+      { id: editingCheckin.id, data },
+      {
+        onSuccess: () => {
+          setEditingCheckin(null);
+          setSelectedMood(null);
+          setNotes("");
+        }
+      }
+    );
+  };
+
+  const handleEditCheckin = (checkin: any) => {
+    setEditingCheckin(checkin);
+    setSelectedMood(checkin.mood_rating);
+    setNotes(checkin.notes || "");
+  };
+
+  const handleDeleteCheckin = (id: string) => {
+    deleteMoodCheckin.mutate(id);
+  };
+
+  const trendData = getMoodTrendData(30);
+
+  if (isLoading) {
+    return (
+      <Layout>
+        <div className="flex items-center justify-center h-64">
+          <div className="text-center">
+            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-bridge-primary mx-auto mb-4"></div>
+            <p className="text-bridge-text/70">Loading your mood data...</p>
+          </div>
+        </div>
+      </Layout>
+    );
+  }
+
   return (
     <Layout>
-      <div className="mb-8">
-        <h1 className="text-3xl font-bold text-bridge-primary">Mood Tracking</h1>
-        <p className="text-lg text-bridge-text/70 mt-1">
-          Keep track of how you're feeling
-        </p>
-      </div>
-      
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        {/* Daily Check-in */}
+      <div className="space-y-6">
+        <div className="mb-6">
+          <h1 className="text-3xl font-bold text-bridge-primary">Mood Check-in</h1>
+          <p className="text-lg text-bridge-text/70 mt-1">
+            Track your daily mood and reflect on your feelings
+          </p>
+        </div>
+
+        {/* Today's Check-in */}
         <Card className="bridge-card">
           <CardHeader>
-            <CardTitle>Today's Check-in</CardTitle>
-            <CardDescription>How are you feeling today?</CardDescription>
+            <CardTitle className="flex items-center gap-2">
+              <Calendar size={20} />
+              {todayCheckin ? "Today's Mood" : "How are you feeling today?"}
+            </CardTitle>
+            {todayCheckin && (
+              <p className="text-sm text-bridge-text/70">
+                Checked in at {format(new Date(todayCheckin.created_at), "h:mm a")}
+              </p>
+            )}
           </CardHeader>
           <CardContent>
-            <div className="flex justify-between mb-6">
-              <Button
-                variant="outline"
-                className={`rounded-2xl flex-1 mx-1 h-16 text-2xl ${
-                  selectedMood === "happy" ? "bg-bridge-primary text-white hover:bg-bridge-primary" : ""
-                }`}
-                onClick={() => setSelectedMood("happy")}
-              >
-                😊
-              </Button>
-              <Button
-                variant="outline"
-                className={`rounded-2xl flex-1 mx-1 h-16 text-2xl ${
-                  selectedMood === "neutral" ? "bg-bridge-primary text-white hover:bg-bridge-primary" : ""
-                }`}
-                onClick={() => setSelectedMood("neutral")}
-              >
-                😐
-              </Button>
-              <Button
-                variant="outline"
-                className={`rounded-2xl flex-1 mx-1 h-16 text-2xl ${
-                  selectedMood === "sad" ? "bg-bridge-primary text-white hover:bg-bridge-primary" : ""
-                }`}
-                onClick={() => setSelectedMood("sad")}
-              >
-                😔
-              </Button>
-            </div>
-            
-            <div className="mb-6">
-              <label className="text-sm font-medium mb-1 block">Journal Note (Optional)</label>
-              <Textarea
-                value={note}
-                onChange={(e) => setNote(e.target.value)}
-                placeholder="Add some notes about how you're feeling..."
-                className="bridge-input resize-none"
-                rows={3}
-              />
-            </div>
-            
-            <Button
-              onClick={handleSubmit}
-              className="bridge-button-primary w-full"
-              disabled={!selectedMood}
-            >
-              Submit Check-in
-            </Button>
-          </CardContent>
-        </Card>
-        
-        {/* Mood History */}
-        <Card className="bridge-card lg:col-span-2">
-          <CardHeader>
-            <CardTitle>Your Mood History</CardTitle>
-            <CardDescription>Track your emotional patterns over time</CardDescription>
-          </CardHeader>
-          <CardContent>
-            <div className="flex flex-wrap justify-between mb-8">
-              {moodHistory.slice(0, 14).map((day, index) => (
-                <div key={index} className="flex flex-col items-center mb-4" style={{ width: '14.28%' }}>
-                  <div className="text-2xl mb-1">{renderMoodEmoji(day.mood)}</div>
-                  <div className="text-xs text-bridge-text/70 text-center">
-                    {formatDate(day.date).split(' ')[0]}
-                    <br />
-                    {formatDate(day.date).split(' ')[1]}
+            {todayCheckin ? (
+              <div className="space-y-4">
+                <div className="flex items-center gap-4">
+                  <span className="text-6xl">{todayCheckin.mood_emoji}</span>
+                  <div>
+                    <p className="text-lg font-medium">
+                      {MOOD_OPTIONS.find(option => option.rating === todayCheckin.mood_rating)?.label}
+                    </p>
+                    {todayCheckin.notes && (
+                      <p className="text-bridge-text/70 mt-1">{todayCheckin.notes}</p>
+                    )}
                   </div>
                 </div>
-              ))}
-            </div>
-            
-            <h3 className="text-lg font-medium mb-3">Recent Check-ins</h3>
-            <div className="space-y-4">
-              {moodHistory.slice(0, 5).map((entry) => (
-                <div key={entry.id} className="p-4 rounded-2xl bg-bridge-muted/20">
-                  <div className="flex items-center justify-between mb-2">
-                    <div className="flex items-center">
-                      <span className="text-xl mr-2">{renderMoodEmoji(entry.mood)}</span>
-                      <span className="font-medium">
-                        {entry.mood.charAt(0).toUpperCase() + entry.mood.slice(1)}
-                      </span>
-                    </div>
-                    <span className="text-sm text-bridge-text/70">{formatDate(entry.date)}</span>
-                  </div>
-                  {entry.note && <p className="text-sm">{entry.note}</p>}
+                <div className="flex gap-2">
+                  <Dialog>
+                    <DialogTrigger asChild>
+                      <Button 
+                        variant="outline" 
+                        size="sm"
+                        onClick={() => handleEditCheckin(todayCheckin)}
+                      >
+                        <Edit size={14} className="mr-1" />
+                        Edit
+                      </Button>
+                    </DialogTrigger>
+                    <DialogContent>
+                      <div className="space-y-6">
+                        <div>
+                          <h2 className="text-xl font-bold mb-2">Edit Today's Mood</h2>
+                          <p className="text-bridge-text/70">Update your mood and notes</p>
+                        </div>
+                        
+                        <div className="space-y-4">
+                          <div>
+                            <label className="text-sm font-medium mb-3 block">How are you feeling?</label>
+                            <div className="grid grid-cols-5 gap-3">
+                              {MOOD_OPTIONS.map((option) => (
+                                <Button
+                                  key={option.rating}
+                                  variant={selectedMood === option.rating ? "default" : "outline"}
+                                  className={`h-16 flex flex-col gap-1 ${
+                                    selectedMood === option.rating ? "bg-bridge-primary text-white" : ""
+                                  }`}
+                                  onClick={() => setSelectedMood(option.rating)}
+                                >
+                                  <span className="text-2xl">{option.emoji}</span>
+                                  <span className="text-xs">{option.label}</span>
+                                </Button>
+                              ))}
+                            </div>
+                          </div>
+                          
+                          <div>
+                            <label className="text-sm font-medium mb-2 block">Notes (optional)</label>
+                            <Textarea
+                              placeholder="How was your day? What influenced your mood?"
+                              value={notes}
+                              onChange={(e) => setNotes(e.target.value)}
+                              className="bridge-input resize-none"
+                              rows={3}
+                            />
+                          </div>
+                        </div>
+                        
+                        <div className="flex gap-2">
+                          <Button 
+                            onClick={handleUpdateMood}
+                            disabled={!selectedMood || updateMoodCheckin.isPending}
+                            className="bg-bridge-primary hover:bg-bridge-primary/90"
+                          >
+                            {updateMoodCheckin.isPending ? "Updating..." : "Update Mood"}
+                          </Button>
+                          <Button 
+                            variant="outline" 
+                            onClick={() => {
+                              setEditingCheckin(null);
+                              setSelectedMood(null);
+                              setNotes("");
+                            }}
+                          >
+                            Cancel
+                          </Button>
+                        </div>
+                      </div>
+                    </DialogContent>
+                  </Dialog>
                 </div>
-              ))}
-            </div>
+              </div>
+            ) : (
+              <div className="space-y-6">
+                <div>
+                  <label className="text-sm font-medium mb-3 block">How are you feeling today?</label>
+                  <div className="grid grid-cols-5 gap-3">
+                    {MOOD_OPTIONS.map((option) => (
+                      <Button
+                        key={option.rating}
+                        variant={selectedMood === option.rating ? "default" : "outline"}
+                        className={`h-20 flex flex-col gap-2 ${
+                          selectedMood === option.rating ? "bg-bridge-primary text-white" : ""
+                        }`}
+                        onClick={() => setSelectedMood(option.rating)}
+                      >
+                        <span className="text-3xl">{option.emoji}</span>
+                        <span className="text-xs text-center">{option.label}</span>
+                      </Button>
+                    ))}
+                  </div>
+                </div>
+                
+                <div>
+                  <label className="text-sm font-medium mb-2 block">Notes (optional)</label>
+                  <Textarea
+                    placeholder="How was your day? What influenced your mood?"
+                    value={notes}
+                    onChange={(e) => setNotes(e.target.value)}
+                    className="bridge-input resize-none"
+                    rows={3}
+                  />
+                </div>
+                
+                <Button 
+                  onClick={handleSubmitMood}
+                  disabled={!selectedMood || createMoodCheckin.isPending}
+                  className="bg-bridge-primary hover:bg-bridge-primary/90"
+                >
+                  {createMoodCheckin.isPending ? "Recording..." : "Record Mood"}
+                </Button>
+              </div>
+            )}
           </CardContent>
         </Card>
+
+        {/* Tabs for Trend and History */}
+        <Tabs defaultValue="trend" className="space-y-4">
+          <TabsList className="bg-bridge-muted/30">
+            <TabsTrigger value="trend">Mood Trend</TabsTrigger>
+            <TabsTrigger value="history">History Log</TabsTrigger>
+          </TabsList>
+          
+          <TabsContent value="trend">
+            <MoodChart data={trendData} title="Your Mood Trend (Last 30 Days)" />
+          </TabsContent>
+          
+          <TabsContent value="history">
+            <Card className="bridge-card">
+              <CardHeader>
+                <CardTitle>Mood History</CardTitle>
+                <p className="text-sm text-bridge-text/70">
+                  Your complete mood check-in log
+                </p>
+              </CardHeader>
+              <CardContent>
+                {moodCheckins.length === 0 ? (
+                  <div className="text-center py-8 text-bridge-text/60">
+                    <p>No mood check-ins yet.</p>
+                    <p className="text-sm mt-1">Start by recording your first mood above!</p>
+                  </div>
+                ) : (
+                  <div className="space-y-4">
+                    {moodCheckins.map((checkin) => (
+                      <div key={checkin.id} className="border border-border rounded-lg p-4 hover:bg-bridge-muted/20 transition-colors">
+                        <div className="flex items-start justify-between">
+                          <div className="flex items-start gap-4">
+                            <span className="text-3xl">{checkin.mood_emoji}</span>
+                            <div className="flex-1">
+                              <div className="flex items-center gap-2 mb-1">
+                                <p className="font-medium">
+                                  {MOOD_OPTIONS.find(option => option.rating === checkin.mood_rating)?.label}
+                                </p>
+                                <Badge variant="outline" className="text-xs">
+                                  {checkin.mood_rating}/5
+                                </Badge>
+                              </div>
+                              <div className="flex items-center gap-2 text-sm text-bridge-text/60 mb-2">
+                                <Clock size={14} />
+                                <span>{format(new Date(checkin.created_at), "MMM d, yyyy 'at' h:mm a")}</span>
+                              </div>
+                              {checkin.notes && (
+                                <p className="text-bridge-text/80 text-sm">{checkin.notes}</p>
+                              )}
+                            </div>
+                          </div>
+                          
+                          <div className="flex items-center gap-1">
+                            <Dialog>
+                              <DialogTrigger asChild>
+                                <Button 
+                                  variant="ghost" 
+                                  size="sm"
+                                  onClick={() => handleEditCheckin(checkin)}
+                                >
+                                  <Edit size={14} />
+                                </Button>
+                              </DialogTrigger>
+                              <DialogContent>
+                                <div className="space-y-6">
+                                  <div>
+                                    <h2 className="text-xl font-bold mb-2">Edit Mood Check-in</h2>
+                                    <p className="text-bridge-text/70">
+                                      {format(new Date(checkin.created_at), "MMM d, yyyy 'at' h:mm a")}
+                                    </p>
+                                  </div>
+                                  
+                                  <div className="space-y-4">
+                                    <div>
+                                      <label className="text-sm font-medium mb-3 block">Mood</label>
+                                      <div className="grid grid-cols-5 gap-3">
+                                        {MOOD_OPTIONS.map((option) => (
+                                          <Button
+                                            key={option.rating}
+                                            variant={selectedMood === option.rating ? "default" : "outline"}
+                                            className={`h-16 flex flex-col gap-1 ${
+                                              selectedMood === option.rating ? "bg-bridge-primary text-white" : ""
+                                            }`}
+                                            onClick={() => setSelectedMood(option.rating)}
+                                          >
+                                            <span className="text-2xl">{option.emoji}</span>
+                                            <span className="text-xs">{option.label}</span>
+                                          </Button>
+                                        ))}
+                                      </div>
+                                    </div>
+                                    
+                                    <div>
+                                      <label className="text-sm font-medium mb-2 block">Notes</label>
+                                      <Textarea
+                                        placeholder="How was your day? What influenced your mood?"
+                                        value={notes}
+                                        onChange={(e) => setNotes(e.target.value)}
+                                        className="bridge-input resize-none"
+                                        rows={3}
+                                      />
+                                    </div>
+                                  </div>
+                                  
+                                  <div className="flex gap-2">
+                                    <Button 
+                                      onClick={handleUpdateMood}
+                                      disabled={!selectedMood || updateMoodCheckin.isPending}
+                                      className="bg-bridge-primary hover:bg-bridge-primary/90"
+                                    >
+                                      {updateMoodCheckin.isPending ? "Updating..." : "Update"}
+                                    </Button>
+                                    <Button 
+                                      variant="outline" 
+                                      onClick={() => {
+                                        setEditingCheckin(null);
+                                        setSelectedMood(null);
+                                        setNotes("");
+                                      }}
+                                    >
+                                      Cancel
+                                    </Button>
+                                  </div>
+                                </div>
+                              </DialogContent>
+                            </Dialog>
+                            
+                            <AlertDialog>
+                              <AlertDialogTrigger asChild>
+                                <Button variant="ghost" size="sm" className="text-destructive hover:text-destructive">
+                                  <Trash2 size={14} />
+                                </Button>
+                              </AlertDialogTrigger>
+                              <AlertDialogContent>
+                                <AlertDialogHeader>
+                                  <AlertDialogTitle>Delete Mood Check-in</AlertDialogTitle>
+                                  <AlertDialogDescription>
+                                    Are you sure you want to delete this mood check-in? This action cannot be undone.
+                                  </AlertDialogDescription>
+                                </AlertDialogHeader>
+                                <AlertDialogFooter>
+                                  <AlertDialogCancel>Cancel</AlertDialogCancel>
+                                  <AlertDialogAction 
+                                    onClick={() => handleDeleteCheckin(checkin.id)}
+                                    className="bg-destructive hover:bg-destructive/90"
+                                  >
+                                    Delete
+                                  </AlertDialogAction>
+                                </AlertDialogFooter>
+                              </AlertDialogContent>
+                            </AlertDialog>
+                          </div>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </CardContent>
+            </Card>
+          </TabsContent>
+        </Tabs>
       </div>
     </Layout>
   );

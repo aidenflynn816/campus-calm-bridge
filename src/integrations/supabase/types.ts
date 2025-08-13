@@ -77,6 +77,36 @@ export type Database = {
         }
         Relationships: []
       }
+      mood_check_ins: {
+        Row: {
+          created_at: string
+          id: string
+          mood_emoji: string
+          mood_rating: number
+          notes: string | null
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          mood_emoji: string
+          mood_rating: number
+          notes?: string | null
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          mood_emoji?: string
+          mood_rating?: number
+          notes?: string | null
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       profiles: {
         Row: {
           avatar_url: string | null
