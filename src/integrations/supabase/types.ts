@@ -107,6 +107,57 @@ export type Database = {
         }
         Relationships: []
       }
+      resources: {
+        Row: {
+          category: string
+          content: string | null
+          counselor_id: string
+          created_at: string
+          description: string | null
+          featured: boolean | null
+          file_name: string | null
+          file_size: number | null
+          file_url: string | null
+          id: string
+          tags: string[] | null
+          title: string
+          type: string
+          updated_at: string
+        }
+        Insert: {
+          category: string
+          content?: string | null
+          counselor_id: string
+          created_at?: string
+          description?: string | null
+          featured?: boolean | null
+          file_name?: string | null
+          file_size?: number | null
+          file_url?: string | null
+          id?: string
+          tags?: string[] | null
+          title: string
+          type: string
+          updated_at?: string
+        }
+        Update: {
+          category?: string
+          content?: string | null
+          counselor_id?: string
+          created_at?: string
+          description?: string | null
+          featured?: boolean | null
+          file_name?: string | null
+          file_size?: number | null
+          file_url?: string | null
+          id?: string
+          tags?: string[] | null
+          title?: string
+          type?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
       typing_status: {
         Row: {
           chat_with_user_id: string
