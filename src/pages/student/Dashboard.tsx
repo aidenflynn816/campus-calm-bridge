@@ -157,14 +157,9 @@ const StudentDashboard = () => {
             ) : (
               <p className="mb-4 text-bridge-text/70">No upcoming appointments</p>
             )}
-            <div className="flex space-x-3">
-              <Button asChild variant="outline" className="w-1/2">
-                <Link to="/student/appointments">View All</Link>
-              </Button>
-              <Button asChild className="bridge-button-primary w-1/2">
-                <Link to="/student/book">Book Meeting</Link>
-              </Button>
-            </div>
+            <Button asChild className="bridge-button-primary w-full">
+              <Link to="/student/book">Book Meeting</Link>
+            </Button>
           </CardContent>
         </Card>
         

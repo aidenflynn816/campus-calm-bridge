@@ -93,9 +93,9 @@ const CounselorDashboard = () => {
             ) : (
               <p className="mb-4 text-bridge-text/70">No appointments scheduled for today</p>
             )}
-            <Button asChild className="bridge-button-primary w-full">
-              <Link to="/counselor/appointments">All Appointments</Link>
-            </Button>
+            <p className="text-sm text-bridge-text/60">
+              Appointments are now managed through Calendly
+            </p>
           </CardContent>
         </Card>
         
@@ -113,9 +113,9 @@ const CounselorDashboard = () => {
             ) : (
               <p className="mb-4 text-bridge-text/70">No pending requests</p>
             )}
-            <Button asChild className="bridge-button-primary w-full">
-              <Link to="/counselor/appointments">Review Requests</Link>
-            </Button>
+            <p className="text-sm text-bridge-text/60">
+              Booking requests are now handled through Calendly
+            </p>
           </CardContent>
         </Card>
         
