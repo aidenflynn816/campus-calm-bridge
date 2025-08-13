@@ -218,20 +218,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       }
 
       if (data.user) {
-        // Create profile record
-        const { error: profileError } = await supabase
-          .from('profiles')
-          .insert({
-            user_id: data.user.id,
-            full_name: fullName,
-            role: role,
-          });
-
-        if (profileError) {
-          console.error('Error creating profile:', profileError);
-          // Don't throw here, as the user account was created successfully
-        }
-
+        // Profile will be created automatically by the database trigger
         // If user is immediately confirmed (email confirmation disabled)
         if (data.session) {
           navigate(role === 'student' ? '/student' : '/counselor');
