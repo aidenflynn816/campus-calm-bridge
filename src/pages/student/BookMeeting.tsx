@@ -6,6 +6,13 @@ import { useCounselors } from "@/hooks/useCounselors";
 import { supabase } from "@/integrations/supabase/client";
 import { useQuery } from "@tanstack/react-query";
 
+// Declare Calendly on window object
+declare global {
+  interface Window {
+    Calendly: any;
+  }
+}
+
 const BookMeeting = () => {
   const [selectedCounselor, setSelectedCounselor] = useState<string | null>(null);
   
@@ -34,18 +41,40 @@ const BookMeeting = () => {
 
   const selectedCounselorData = counselors.find(c => c.id === selectedCounselor);
 
+  // Initialize Calendly widget when counselor is selected
+  useEffect(() => {
+    if (selectedCounselorData?.calendlyUrl) {
+      const initializeCalendly = () => {
+        if (window.Calendly) {
+          const widget = document.querySelector('.calendly-inline-widget');
+          if (widget) {
+            // Clear any existing content
+            widget.innerHTML = '';
+            // Initialize the widget
+            window.Calendly.initInlineWidget({
+              url: selectedCounselorData.calendlyUrl,
+              parentElement: widget
+            });
+          }
+        } else {
+          // If Calendly isn't loaded yet, try again in 100ms
+          setTimeout(initializeCalendly, 100);
+        }
+      };
+      
+      // Small delay to ensure DOM is updated
+      setTimeout(initializeCalendly, 50);
+    }
+  }, [selectedCounselorData]);
+
   useEffect(() => {
     // Load Calendly widget script
-    const script = document.createElement('script');
-    script.src = 'https://assets.calendly.com/assets/external/widget.js';
-    script.async = true;
-    document.body.appendChild(script);
-
-    return () => {
-      if (document.body.contains(script)) {
-        document.body.removeChild(script);
-      }
-    };
+    if (!document.querySelector('script[src*="calendly.com"]')) {
+      const script = document.createElement('script');
+      script.src = 'https://assets.calendly.com/assets/external/widget.js';
+      script.async = true;
+      document.head.appendChild(script);
+    }
   }, []);
 
   
@@ -75,7 +104,6 @@ const BookMeeting = () => {
               <div className="min-h-[600px]" key={selectedCounselor}>
                 <div 
                   className="calendly-inline-widget" 
-                  data-url={selectedCounselorData.calendlyUrl}
                   style={{ minWidth: '320px', height: '600px' }}
                 ></div>
               </div>
