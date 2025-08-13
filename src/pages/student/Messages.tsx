@@ -1,4 +1,5 @@
 import { useState, useEffect, useRef } from "react";
+import { useSearchParams } from "react-router-dom";
 import Layout from "../../components/Layout";
 import { Card } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
@@ -14,6 +15,7 @@ import { motion } from "framer-motion";
 
 const Messages = () => {
   const { user } = useAuth();
+  const [searchParams] = useSearchParams();
   const [selectedCounselorId, setSelectedCounselorId] = useState<string | null>(null);
   const [newMessage, setNewMessage] = useState("");
   const [searchTerm, setSearchTerm] = useState("");
@@ -38,6 +40,14 @@ const Messages = () => {
     500,
     [newMessage]
   );
+  
+  // Set initial counselor from URL parameter
+  useEffect(() => {
+    const counselorParam = searchParams.get('counselor');
+    if (counselorParam && counselors.length > 0) {
+      setSelectedCounselorId(counselorParam);
+    }
+  }, [searchParams, counselors]);
   
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });

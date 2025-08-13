@@ -1,49 +1,34 @@
 import { useState } from "react";
+import { useNavigate } from "react-router-dom";
 import { MessageSquare, Calendar, User } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Textarea } from "@/components/ui/textarea";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import Layout from "@/components/Layout";
 import { useCounselors } from "@/hooks/useCounselors";
-import { useMessaging } from "@/hooks/useMessaging";
 import { useAppointments } from "@/hooks/useAppointments";
 import { toast } from "sonner";
 
 export default function StudentCounselors() {
+  const navigate = useNavigate();
   const { counselors, isLoading } = useCounselors();
   const [selectedCounselorId, setSelectedCounselorId] = useState<string>("");
-  const [messageContent, setMessageContent] = useState("");
   const [appointmentDate, setAppointmentDate] = useState("");
   const [appointmentTime, setAppointmentTime] = useState("");
   const [appointmentReason, setAppointmentReason] = useState("");
-  const [messageDialogOpen, setMessageDialogOpen] = useState(false);
   const [appointmentDialogOpen, setAppointmentDialogOpen] = useState(false);
 
-  const { sendMessage, isSending } = useMessaging(selectedCounselorId);
   const { createAppointment } = useAppointments();
 
   const timeSlots = [
     "09:00", "09:30", "10:00", "10:30", "11:00", "11:30",
     "13:00", "13:30", "14:00", "14:30", "15:00", "15:30", "16:00"
   ];
-
-  const handleSendMessage = async () => {
-    if (!messageContent.trim() || !selectedCounselorId) return;
-    
-    try {
-      sendMessage(messageContent);
-      setMessageContent("");
-      setMessageDialogOpen(false);
-      toast.success("Message sent successfully!");
-    } catch (error) {
-      toast.error("Failed to send message");
-    }
-  };
 
   const handleBookAppointment = async () => {
     if (!appointmentDate || !appointmentTime || !selectedCounselorId) return;
@@ -65,9 +50,8 @@ export default function StudentCounselors() {
     }
   };
 
-  const openMessageDialog = (counselorId: string) => {
-    setSelectedCounselorId(counselorId);
-    setMessageDialogOpen(true);
+  const openMessagePage = (counselorId: string) => {
+    navigate(`/student/messages?counselor=${counselorId}`);
   };
 
   const openAppointmentDialog = (counselorId: string) => {
@@ -110,7 +94,7 @@ export default function StudentCounselors() {
               <CardContent className="space-y-3">
                 <div className="flex gap-2">
                   <Button 
-                    onClick={() => openMessageDialog(counselor.user_id)}
+                    onClick={() => openMessagePage(counselor.user_id)}
                     variant="outline" 
                     className="flex-1"
                   >
@@ -129,41 +113,6 @@ export default function StudentCounselors() {
             </Card>
           ))}
         </div>
-
-        {/* Message Dialog */}
-        <Dialog open={messageDialogOpen} onOpenChange={setMessageDialogOpen}>
-          <DialogContent>
-            <DialogHeader>
-              <DialogTitle>Send Message</DialogTitle>
-            </DialogHeader>
-            <div className="space-y-4">
-              <div>
-                <Label htmlFor="message">Message</Label>
-                <Textarea
-                  id="message"
-                  placeholder="Type your message here..."
-                  value={messageContent}
-                  onChange={(e) => setMessageContent(e.target.value)}
-                  rows={4}
-                />
-              </div>
-              <div className="flex gap-2 justify-end">
-                <Button 
-                  variant="outline" 
-                  onClick={() => setMessageDialogOpen(false)}
-                >
-                  Cancel
-                </Button>
-                <Button 
-                  onClick={handleSendMessage}
-                  disabled={!messageContent.trim() || isSending}
-                >
-                  {isSending ? "Sending..." : "Send Message"}
-                </Button>
-              </div>
-            </div>
-          </DialogContent>
-        </Dialog>
 
         {/* Appointment Dialog */}
         <Dialog open={appointmentDialogOpen} onOpenChange={setAppointmentDialogOpen}>
