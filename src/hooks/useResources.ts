@@ -41,12 +41,10 @@ export const useResources = () => {
     queryKey: ['resources'],
     queryFn: async () => {
       try {
-        const { data, error } = await supabase
+        // First try a simpler approach without the join
+        const { data: resourcesData, error } = await supabase
           .from('resources')
-          .select(`
-            *,
-            counselor:profiles!counselor_id(full_name)
-          `)
+          .select('*')
           .order('created_at', { ascending: false });
 
         if (error) {
@@ -54,18 +52,24 @@ export const useResources = () => {
           throw error;
         }
 
+        // Then fetch counselor names separately and merge
+        const counselorIds = [...new Set(resourcesData?.map(r => r.counselor_id) || [])];
+        
+        let counselors: any[] = [];
+        if (counselorIds.length > 0) {
+          const { data: counselorData } = await supabase
+            .from('profiles')
+            .select('user_id, full_name')
+            .in('user_id', counselorIds);
+          counselors = counselorData || [];
+        }
+
         // Transform and type the data properly
-        return (data || []).map(item => {
-          let counselor = undefined;
-          if (item.counselor && typeof item.counselor === 'object' && item.counselor !== null) {
-            const counselorObj = item.counselor as any;
-            if (counselorObj.full_name) {
-              counselor = { full_name: counselorObj.full_name };
-            }
-          }
+        return (resourcesData || []).map(item => {
+          const counselor = counselors.find(c => c.user_id === item.counselor_id);
           return {
             ...item,
-            counselor
+            counselor: counselor ? { full_name: counselor.full_name } : undefined
           };
         }) as Resource[];
       } catch (error) {
