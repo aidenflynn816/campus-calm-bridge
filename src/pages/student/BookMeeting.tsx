@@ -21,6 +21,7 @@ const BookMeeting = () => {
 
       if (error) throw error;
 
+      console.log('Fetched counselors with calendly:', data);
       return (data || []).map(counselor => ({
         id: counselor.id,
         name: counselor.full_name || 'Unknown Counselor',
@@ -74,6 +75,11 @@ const BookMeeting = () => {
                   data-url={selectedCounselorData.calendlyUrl}
                   style={{ minWidth: '320px', height: '600px' }}
                 ></div>
+                <script 
+                  type="text/javascript" 
+                  src="https://assets.calendly.com/assets/external/widget.js" 
+                  async
+                ></script>
               </div>
             ) : selectedCounselorData ? (
               <div className="flex items-center justify-center h-96 bg-bridge-muted/20 rounded-2xl">
