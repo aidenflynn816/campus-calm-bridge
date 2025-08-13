@@ -7,6 +7,8 @@ import { Textarea } from "@/components/ui/textarea";
 import { toast } from "sonner";
 import { useAppointments } from "@/hooks/useAppointments";
 import { useAuth } from "@/contexts/AuthContext";
+import { useAvailability } from "@/hooks/useGoogleCalendar";
+import { useCounselors } from "@/hooks/useCounselors";
 
 const BookMeeting = () => {
   const [date, setDate] = useState<Date | undefined>(undefined);
@@ -15,16 +17,17 @@ const BookMeeting = () => {
   const [selectedCounselor, setSelectedCounselor] = useState<string | null>(null);
   const { createAppointment } = useAppointments();
   const { user } = useAuth();
+  const { counselors } = useCounselors();
   
-  // Mock data for available counselors and time slots
-  const counselors = [
-    { id: 1, name: "Dr. Jamie Counselor", specialty: "Anxiety, Depression" },
-    { id: 2, name: "Dr. Jordan Smith", specialty: "Academic Stress, Relationships" },
-  ];
+  // Get dynamic availability for selected counselor and date
+  const { data: availabilityData, isLoading: isLoadingAvailability } = useAvailability(
+    selectedCounselor || '', 
+    date ? date.toISOString().split('T')[0] : ''
+  );
   
-  const availableTimes = [
-    "9:00 AM", "10:00 AM", "11:00 AM", "1:00 PM", 
-    "2:00 PM", "3:00 PM", "4:00 PM"
+  // Get available time slots from API or fallback to default
+  const availableTimes = availabilityData?.availableSlots || [
+    "09:00", "10:00", "11:00", "13:00", "14:00", "15:00", "16:00"
   ];
   
   const handleSubmit = async () => {
@@ -85,24 +88,44 @@ const BookMeeting = () => {
               </div>
               
               <div>
-                <h3 className="text-lg font-medium mb-3">Available Times</h3>
+                <div className="flex items-center justify-between mb-3">
+                  <h3 className="text-lg font-medium">Available Times</h3>
+                  {availabilityData?.calendarConnected && (
+                    <span className="text-sm text-bridge-text/70 flex items-center gap-1">
+                      <div className="w-2 h-2 bg-green-500 rounded-full"></div>
+                      Calendar connected
+                    </span>
+                  )}
+                </div>
                 {date ? (
-                  <div className="grid grid-cols-2 gap-2">
-                    {availableTimes.map((time) => (
-                      <Button
-                        key={time}
-                        variant={selectedTime === time ? "default" : "outline"}
-                        className={`rounded-xl ${
-                          selectedTime === time 
-                            ? "bg-bridge-primary text-white" 
-                            : "hover:bg-bridge-accent/20"
-                        }`}
-                        onClick={() => setSelectedTime(time)}
-                      >
-                        {time}
-                      </Button>
-                    ))}
-                  </div>
+                  isLoadingAvailability ? (
+                    <div className="grid grid-cols-2 gap-2">
+                      {[...Array(6)].map((_, i) => (
+                        <div key={i} className="h-10 bg-bridge-muted/20 animate-pulse rounded-xl"></div>
+                      ))}
+                    </div>
+                  ) : availableTimes.length > 0 ? (
+                    <div className="grid grid-cols-2 gap-2">
+                      {availableTimes.map((time) => (
+                        <Button
+                          key={time}
+                          variant={selectedTime === time ? "default" : "outline"}
+                          className={`rounded-xl ${
+                            selectedTime === time 
+                              ? "bg-bridge-primary text-white" 
+                              : "hover:bg-bridge-accent/20"
+                          }`}
+                          onClick={() => setSelectedTime(time)}
+                        >
+                          {time}
+                        </Button>
+                      ))}
+                    </div>
+                  ) : (
+                    <div className="flex items-center justify-center h-40 bg-bridge-muted/20 rounded-2xl">
+                      <p className="text-bridge-text/70">No available time slots for this date</p>
+                    </div>
+                  )
                 ) : (
                   <div className="flex items-center justify-center h-40 bg-bridge-muted/20 rounded-2xl">
                     <p className="text-bridge-text/70">Please select a date first</p>
@@ -136,15 +159,19 @@ const BookMeeting = () => {
                 {counselors.map((counselor) => (
                   <div 
                     key={counselor.id} 
-                    className="flex items-center space-x-3 p-3 rounded-2xl hover:bg-bridge-muted/20 cursor-pointer border border-bridge-muted/30"
-                    onClick={() => setSelectedCounselor(counselor.id.toString())}
+                    className={`flex items-center space-x-3 p-3 rounded-2xl hover:bg-bridge-muted/20 cursor-pointer border ${
+                      selectedCounselor === counselor.user_id 
+                        ? "border-bridge-primary bg-bridge-accent/10" 
+                        : "border-bridge-muted/30"
+                    }`}
+                    onClick={() => setSelectedCounselor(counselor.user_id)}
                   >
                     <div className="w-10 h-10 rounded-full bg-bridge-accent flex items-center justify-center text-bridge-primary font-medium">
-                      {counselor.name.charAt(0)}
+                      {counselor.full_name.charAt(0)}
                     </div>
                     <div>
-                      <p className="font-medium">{counselor.name}</p>
-                      <p className="text-sm text-bridge-text/70">{counselor.specialty}</p>
+                      <p className="font-medium">{counselor.full_name}</p>
+                      <p className="text-sm text-bridge-text/70">Available for appointments</p>
                     </div>
                   </div>
                 ))}
@@ -170,7 +197,7 @@ const BookMeeting = () => {
                 </div>
                 <div>
                   <p className="text-sm text-bridge-text/70">Counselor</p>
-                  <p className="font-medium">{selectedCounselor ? counselors.find(c => c.id.toString() === selectedCounselor)?.name : "Not selected"}</p>
+                  <p className="font-medium">{selectedCounselor ? counselors.find(c => c.user_id === selectedCounselor)?.full_name : "Not selected"}</p>
                 </div>
               </div>
               

@@ -19,6 +19,7 @@ export type Database = {
           counselor_id: string
           created_at: string
           date: string
+          google_event_id: string | null
           id: string
           reason: string | null
           status: string
@@ -30,6 +31,7 @@ export type Database = {
           counselor_id: string
           created_at?: string
           date: string
+          google_event_id?: string | null
           id?: string
           reason?: string | null
           status?: string
@@ -41,6 +43,7 @@ export type Database = {
           counselor_id?: string
           created_at?: string
           date?: string
+          google_event_id?: string | null
           id?: string
           reason?: string | null
           status?: string
@@ -49,6 +52,47 @@ export type Database = {
           updated_at?: string
         }
         Relationships: []
+      }
+      counselor_availability: {
+        Row: {
+          counselor_id: string
+          created_at: string
+          day_of_week: number
+          end_time: string
+          id: string
+          is_available: boolean | null
+          start_time: string
+          updated_at: string
+        }
+        Insert: {
+          counselor_id: string
+          created_at?: string
+          day_of_week: number
+          end_time: string
+          id?: string
+          is_available?: boolean | null
+          start_time: string
+          updated_at?: string
+        }
+        Update: {
+          counselor_id?: string
+          created_at?: string
+          day_of_week?: number
+          end_time?: string
+          id?: string
+          is_available?: boolean | null
+          start_time?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "fk_counselor_availability_counselor"
+            columns: ["counselor_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["user_id"]
+          },
+        ]
       }
       data_sharing_requests: {
         Row: {
@@ -146,8 +190,12 @@ export type Database = {
       profiles: {
         Row: {
           avatar_url: string | null
+          calendar_connected: boolean | null
           created_at: string
           full_name: string | null
+          google_access_token: string | null
+          google_calendar_id: string | null
+          google_refresh_token: string | null
           id: string
           role: string
           updated_at: string
@@ -155,8 +203,12 @@ export type Database = {
         }
         Insert: {
           avatar_url?: string | null
+          calendar_connected?: boolean | null
           created_at?: string
           full_name?: string | null
+          google_access_token?: string | null
+          google_calendar_id?: string | null
+          google_refresh_token?: string | null
           id?: string
           role: string
           updated_at?: string
@@ -164,8 +216,12 @@ export type Database = {
         }
         Update: {
           avatar_url?: string | null
+          calendar_connected?: boolean | null
           created_at?: string
           full_name?: string | null
+          google_access_token?: string | null
+          google_calendar_id?: string | null
+          google_refresh_token?: string | null
           id?: string
           role?: string
           updated_at?: string
