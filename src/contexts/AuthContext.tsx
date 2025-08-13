@@ -89,11 +89,13 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         setSession(session);
         
         if (session?.user) {
+          console.log('Setting user from session...');
           // Defer profile fetching to avoid deadlocks
           setTimeout(async () => {
             const profile = await fetchUserProfile(session.user.id);
+            console.log('Profile fetched:', profile);
             if (profile) {
-              setUser({
+              const newUser = {
                 id: session.user.id,
                 email: session.user.email!,
                 role: profile.role as 'student' | 'counselor',
@@ -101,18 +103,23 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
                 name: profile.full_name, // Backward compatibility
                 avatar_url: profile.avatar_url,
                 profile_image: profile.avatar_url, // Backward compatibility
-              });
+              };
+              console.log('Setting user:', newUser);
+              setUser(newUser);
             } else {
               // Handle case where profile doesn't exist
-              setUser({
+              const fallbackUser = {
                 id: session.user.id,
                 email: session.user.email!,
-                role: 'student', // Default role
+                role: 'student' as const, // Default role
                 name: session.user.email, // Fallback name
-              });
+              };
+              console.log('Setting fallback user:', fallbackUser);
+              setUser(fallbackUser);
             }
           }, 0);
         } else {
+          console.log('No session, clearing user');
           setUser(null);
         }
         
