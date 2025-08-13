@@ -82,96 +82,70 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
 
   // Initialize auth state
   useEffect(() => {
-    // Set up auth state listener FIRST
+    let mounted = true;
+    
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
-      async (event, session) => {
-        console.log('Auth state changed:', event, session?.user?.email);
+      (event, session) => {
+        if (!mounted) return;
         
+        console.log('Auth state changed:', event, session?.user?.email);
         setSession(session);
         
-        if (session?.user && event === 'SIGNED_IN') {
-          console.log('User signed in, fetching profile and redirecting...');
-          // Fetch profile and set user, then redirect
-          const profile = await fetchUserProfile(session.user.id);
-          console.log('Profile fetched:', profile);
-          
-          let newUser: User;
-          if (profile) {
-            newUser = {
-              id: session.user.id,
-              email: session.user.email!,
-              role: profile.role as 'student' | 'counselor',
-              full_name: profile.full_name,
-              name: profile.full_name, // Backward compatibility
-              avatar_url: profile.avatar_url,
-              profile_image: profile.avatar_url, // Backward compatibility
-            };
-          } else {
-            // Handle case where profile doesn't exist
-            newUser = {
-              id: session.user.id,
-              email: session.user.email!,
-              role: 'student' as const, // Default role
-              name: session.user.email, // Fallback name
-            };
-          }
-          
-          console.log('Setting user and redirecting:', newUser);
-          setUser(newUser);
-          
-          // Redirect to appropriate dashboard
-          const redirectPath = newUser.role === 'student' ? '/student' : '/counselor';
-          console.log('Redirecting to:', redirectPath);
-          navigate(redirectPath);
-        } else if (session?.user) {
-          // Handle other auth events (like initial session)
-          console.log('Setting user from session...');
+        if (session?.user) {
+          // Defer profile fetching to avoid deadlock
           setTimeout(async () => {
-            const profile = await fetchUserProfile(session.user.id);
-            console.log('Profile fetched:', profile);
-            if (profile) {
-              const newUser = {
-                id: session.user.id,
-                email: session.user.email!,
-                role: profile.role as 'student' | 'counselor',
-                full_name: profile.full_name,
-                name: profile.full_name, // Backward compatibility
-                avatar_url: profile.avatar_url,
-                profile_image: profile.avatar_url, // Backward compatibility
-              };
-              console.log('Setting user:', newUser);
+            if (!mounted) return;
+            
+            try {
+              const profile = await fetchUserProfile(session.user.id);
+              if (!mounted) return;
+              
+              let newUser: User;
+              if (profile) {
+                newUser = {
+                  id: session.user.id,
+                  email: session.user.email!,
+                  role: profile.role as 'student' | 'counselor',
+                  full_name: profile.full_name,
+                  name: profile.full_name,
+                  avatar_url: profile.avatar_url,
+                  profile_image: profile.avatar_url,
+                };
+              } else {
+                newUser = {
+                  id: session.user.id,
+                  email: session.user.email!,
+                  role: 'student' as const,
+                  name: session.user.email,
+                };
+              }
+              
               setUser(newUser);
-            } else {
-              // Handle case where profile doesn't exist
-              const fallbackUser = {
-                id: session.user.id,
-                email: session.user.email!,
-                role: 'student' as const, // Default role
-                name: session.user.email, // Fallback name
-              };
-              console.log('Setting fallback user:', fallbackUser);
-              setUser(fallbackUser);
+            } catch (error) {
+              console.error('Error in auth state change:', error);
+            } finally {
+              if (mounted) {
+                setIsLoading(false);
+              }
             }
           }, 0);
         } else {
-          console.log('No session, clearing user');
           setUser(null);
+          setIsLoading(false);
         }
-        
-        setIsLoading(false);
       }
     );
 
-    // THEN check for existing session
+    // Check for existing session
     supabase.auth.getSession().then(({ data: { session } }) => {
-      // This will trigger the onAuthStateChange listener above
-      setSession(session);
-      if (!session) {
-        setIsLoading(false);
-      }
+      if (!mounted) return;
+      // The listener above will handle the session
     });
 
-    return () => subscription.unsubscribe();
+    return () => {
+      mounted = false;
+      subscription.unsubscribe();
+    };
   }, [navigate]);
 
   // Sign in function
