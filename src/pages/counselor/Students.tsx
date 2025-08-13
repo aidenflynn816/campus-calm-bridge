@@ -1,5 +1,6 @@
 
 import { useState, useEffect } from "react";
+import { useNavigate } from "react-router-dom";
 import { User, Calendar, MessageCircle, TrendingUp, Search, Filter } from "lucide-react";
 import Layout from "../../components/Layout";
 import { Card, CardContent, CardHeader, CardTitle } from "../../components/ui/card";
@@ -14,6 +15,7 @@ import { useAppointments } from "../../hooks/useAppointments";
 import { useAuth } from "../../contexts/AuthContext";
 
 const StudentList = () => {
+  const navigate = useNavigate();
   const { user } = useAuth();
   const { students, isLoading } = useStudents();
   const { moodCheckins } = useMoodCheckins();
@@ -209,6 +211,13 @@ const StudentList = () => {
                       </div>
 
                       <div className="flex items-center gap-2">
+                        <Button 
+                          variant="outline" 
+                          size="sm"
+                          onClick={() => navigate(`/counselor/students/${student.user_id}`)}
+                        >
+                          View Details
+                        </Button>
                         <Button variant="outline" size="sm">
                           <MessageCircle className="h-4 w-4 mr-1" />
                           Message

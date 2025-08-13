@@ -17,6 +17,7 @@ import CounselorAppointments from "./pages/counselor/Appointments";
 import CounselorMessages from "./pages/counselor/Messages";
 import CounselorResources from "./pages/counselor/Resources";
 import StudentList from "./pages/counselor/Students";
+import StudentDetail from "./pages/counselor/StudentDetail";
 import MoodTracking from "./pages/student/MoodTracking";
 import MoodInsights from "./pages/counselor/MoodInsights";
 import NotFound from "./pages/NotFound";
@@ -124,6 +125,14 @@ const App = () => (
             element={
               <ProtectedRoute allowedRoles={["counselor"]}>
                 <StudentList />
+              </ProtectedRoute>
+            } 
+          />
+          <Route 
+            path="/counselor/students/:studentId" 
+            element={
+              <ProtectedRoute allowedRoles={["counselor"]}>
+                <StudentDetail />
               </ProtectedRoute>
             } 
           />

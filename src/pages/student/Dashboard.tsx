@@ -7,6 +7,7 @@ import { Calendar, MessageSquare, BookOpen, SmilePlus, TrendingUp } from "lucide
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { useMoodCheckins, MOOD_OPTIONS } from "@/hooks/useMoodCheckins";
+import { DataSharingNotifications } from "../../components/DataSharingNotifications";
 import { format } from "date-fns";
 
 const StudentDashboard = () => {
@@ -60,6 +61,10 @@ const StudentDashboard = () => {
   
   return (
     <Layout>
+      <div className="mb-6">
+        <DataSharingNotifications />
+      </div>
+
       <div className="mb-8">
         <h1 className="text-3xl font-bold text-bridge-primary">
           Welcome, {user?.name?.split(" ")[0] || "Student"}

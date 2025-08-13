@@ -50,6 +50,42 @@ export type Database = {
         }
         Relationships: []
       }
+      data_sharing_requests: {
+        Row: {
+          counselor_id: string
+          created_at: string
+          id: string
+          message: string | null
+          request_type: string
+          responded_at: string | null
+          status: string
+          student_id: string
+          updated_at: string
+        }
+        Insert: {
+          counselor_id: string
+          created_at?: string
+          id?: string
+          message?: string | null
+          request_type?: string
+          responded_at?: string | null
+          status?: string
+          student_id: string
+          updated_at?: string
+        }
+        Update: {
+          counselor_id?: string
+          created_at?: string
+          id?: string
+          message?: string | null
+          request_type?: string
+          responded_at?: string | null
+          status?: string
+          student_id?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
       messages: {
         Row: {
           content: string
