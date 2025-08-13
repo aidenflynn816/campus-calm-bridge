@@ -1,37 +1,35 @@
 import { useState, useEffect } from "react";
 import Layout from "../../components/Layout";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { Calendar } from "lucide-react";
 import { useCounselors } from "@/hooks/useCounselors";
-
-// Define counselors with their Calendly links
-const counselorsData = [
-  { 
-    id: "1", 
-    name: "Dr. Jamie Counselor", 
-    specialty: "Anxiety, Depression",
-    calendlyUrl: "https://calendly.com/dr-jamie-counselor" // Replace with actual Calendly URL
-  },
-  { 
-    id: "2", 
-    name: "Dr. Jordan Smith", 
-    specialty: "Academic Stress, Relationships",
-    calendlyUrl: "https://calendly.com/dr-jordan-smith" // Replace with actual Calendly URL
-  },
-];
+import { supabase } from "@/integrations/supabase/client";
+import { useQuery } from "@tanstack/react-query";
 
 const BookMeeting = () => {
   const [selectedCounselor, setSelectedCounselor] = useState<string | null>(null);
-  const { counselors: dbCounselors, isLoading } = useCounselors();
   
-  // Use database counselors if available, fallback to static data
-  const counselors = dbCounselors.length > 0 
-    ? dbCounselors.map(c => ({
-        id: c.id,
-        name: c.full_name,
+  // Fetch counselors with their Calendly URLs from the database
+  const { data: counselors = [], isLoading } = useQuery({
+    queryKey: ['counselors-with-calendly'],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from('profiles')
+        .select('id, user_id, full_name, calendly_url')
+        .eq('role', 'counselor')
+        .order('full_name', { ascending: true });
+
+      if (error) throw error;
+
+      return (data || []).map(counselor => ({
+        id: counselor.id,
+        name: counselor.full_name || 'Unknown Counselor',
         specialty: "Mental Health Counseling", // Default specialty
-        calendlyUrl: `https://calendly.com/${c.full_name.toLowerCase().replace(/\s+/g, '-')}` // Generated URL - should be configured per counselor
-      }))
-    : counselorsData;
+        calendlyUrl: counselor.calendly_url || null,
+        hasCalendlyUrl: !!counselor.calendly_url
+      }));
+    },
+  });
 
   const selectedCounselorData = counselors.find(c => c.id === selectedCounselor);
 
@@ -69,13 +67,24 @@ const BookMeeting = () => {
             </CardDescription>
           </CardHeader>
           <CardContent>
-            {selectedCounselorData ? (
+            {selectedCounselorData?.calendlyUrl ? (
               <div className="min-h-[600px]">
                 <div 
                   className="calendly-inline-widget" 
                   data-url={selectedCounselorData.calendlyUrl}
                   style={{ minWidth: '320px', height: '600px' }}
                 ></div>
+              </div>
+            ) : selectedCounselorData ? (
+              <div className="flex items-center justify-center h-96 bg-bridge-muted/20 rounded-2xl">
+                <div className="text-center">
+                  <Calendar className="h-12 w-12 mx-auto text-bridge-text/50 mb-4" />
+                  <h3 className="text-lg font-medium text-bridge-text mb-2">Calendly Not Available</h3>
+                  <p className="text-bridge-text/70">
+                    {selectedCounselorData.name} hasn't set up their Calendly link yet.
+                    Please contact them directly or choose another counselor.
+                  </p>
+                </div>
               </div>
             ) : (
               <div className="flex items-center justify-center h-96 bg-bridge-muted/20 rounded-2xl">
@@ -126,10 +135,18 @@ const BookMeeting = () => {
                       <div className="flex-1">
                         <p className="font-medium">{counselor.name}</p>
                         <p className="text-sm text-bridge-text/70">{counselor.specialty}</p>
+                        {!counselor.hasCalendlyUrl && (
+                          <p className="text-xs text-amber-600 font-medium">⚠️ Calendly not configured</p>
+                        )}
                       </div>
-                      {selectedCounselor === counselor.id && (
-                        <div className="w-3 h-3 rounded-full bg-bridge-primary"></div>
-                      )}
+                      <div className="flex items-center space-x-2">
+                        {counselor.hasCalendlyUrl && (
+                          <div className="w-2 h-2 rounded-full bg-green-500" title="Calendly available"></div>
+                        )}
+                        {selectedCounselor === counselor.id && (
+                          <div className="w-3 h-3 rounded-full bg-bridge-primary"></div>
+                        )}
+                      </div>
                     </div>
                   ))}
                 </div>

@@ -5,9 +5,30 @@ import { useAuth } from "../../contexts/AuthContext";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Calendar, MessageSquare, Users, BarChart } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { CalendlyUrlManager } from "@/components/CalendlyUrlManager";
+import { useQuery } from "@tanstack/react-query";
+import { supabase } from "@/integrations/supabase/client";
 
 const CounselorDashboard = () => {
   const { user } = useAuth();
+  
+  // Fetch counselor profile data including Calendly URL
+  const { data: profile } = useQuery({
+    queryKey: ['profile', user?.id],
+    queryFn: async () => {
+      if (!user?.id) return null;
+      
+      const { data, error } = await supabase
+        .from('profiles')
+        .select('calendly_url')
+        .eq('user_id', user.id)
+        .maybeSingle();
+      
+      if (error) throw error;
+      return data;
+    },
+    enabled: !!user?.id,
+  });
   
   // Mock data for dashboard
   const upcomingAppointments = [
@@ -43,6 +64,11 @@ const CounselorDashboard = () => {
       </div>
       
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+        {/* Calendly URL Manager */}
+        <Card className="bridge-card md:col-span-2 lg:col-span-3">
+          <CalendlyUrlManager currentUrl={profile?.calendly_url} />
+        </Card>
+        
         {/* Today's Appointments */}
         <Card className="bridge-card">
           <CardHeader className="pb-2">
