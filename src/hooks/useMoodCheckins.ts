@@ -67,21 +67,24 @@ export const MOOD_OPTIONS = [
   },
 ];
 
-export const useMoodCheckins = () => {
+export const useMoodCheckins = (targetUserId?: string) => {
   const { toast } = useToast();
   const queryClient = useQueryClient();
 
   const { data: moodCheckins = [], isLoading, error } = useQuery({
-    queryKey: ['mood-checkins'],
+    queryKey: ['mood-checkins', targetUserId],
     queryFn: async () => {
       try {
         const { data: user } = await supabase.auth.getUser();
         if (!user.user) throw new Error('Not authenticated');
 
+        // Use targetUserId if provided, otherwise use current user's ID
+        const userId = targetUserId || user.user.id;
+
         const { data, error } = await supabase
           .from('mood_check_ins')
           .select('*')
-          .eq('user_id', user.user.id)
+          .eq('user_id', userId)
           .order('created_at', { ascending: false });
 
         if (error) {

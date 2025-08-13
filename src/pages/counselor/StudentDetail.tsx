@@ -21,7 +21,7 @@ const StudentDetail = () => {
   const { toast } = useToast();
   
   const { students } = useStudents();
-  const { moodCheckins } = useMoodCheckins();
+  const { moodCheckins } = useMoodCheckins(studentId);
   const { appointments } = useAppointments();
   const { 
     createRequest, 
@@ -35,11 +35,9 @@ const StudentDetail = () => {
   const student = students.find(s => s.user_id === studentId);
   const existingRequest = studentId ? getRequestByStudentId(studentId) : null;
   
-  // Filter data based on approval status
+  // Check if we have approved access
   const hasApprovedAccess = existingRequest?.status === 'approved';
-  const studentMoods = hasApprovedAccess 
-    ? moodCheckins.filter(checkin => checkin.user_id === studentId)
-    : [];
+  const studentMoods = hasApprovedAccess ? moodCheckins : [];
   
   const studentAppointments = appointments.filter(apt => apt.student_id === studentId);
 
