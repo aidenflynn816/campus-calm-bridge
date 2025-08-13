@@ -1,55 +1,51 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import Layout from "../../components/Layout";
-import { Button } from "@/components/ui/button";
-import { Calendar } from "@/components/ui/calendar";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Textarea } from "@/components/ui/textarea";
-import { toast } from "sonner";
-import { useAppointments } from "@/hooks/useAppointments";
-import { useAuth } from "@/contexts/AuthContext";
+import { useCounselors } from "@/hooks/useCounselors";
+
+// Define counselors with their Calendly links
+const counselorsData = [
+  { 
+    id: "1", 
+    name: "Dr. Jamie Counselor", 
+    specialty: "Anxiety, Depression",
+    calendlyUrl: "https://calendly.com/dr-jamie-counselor" // Replace with actual Calendly URL
+  },
+  { 
+    id: "2", 
+    name: "Dr. Jordan Smith", 
+    specialty: "Academic Stress, Relationships",
+    calendlyUrl: "https://calendly.com/dr-jordan-smith" // Replace with actual Calendly URL
+  },
+];
 
 const BookMeeting = () => {
-  const [date, setDate] = useState<Date | undefined>(undefined);
-  const [selectedTime, setSelectedTime] = useState<string | null>(null);
-  const [reason, setReason] = useState("");
   const [selectedCounselor, setSelectedCounselor] = useState<string | null>(null);
-  const { createAppointment } = useAppointments();
-  const { user } = useAuth();
+  const { counselors: dbCounselors, isLoading } = useCounselors();
   
-  // Mock data for available counselors and time slots
-  const counselors = [
-    { id: 1, name: "Dr. Jamie Counselor", specialty: "Anxiety, Depression" },
-    { id: 2, name: "Dr. Jordan Smith", specialty: "Academic Stress, Relationships" },
-  ];
-  
-  const availableTimes = [
-    "9:00 AM", "10:00 AM", "11:00 AM", "1:00 PM", 
-    "2:00 PM", "3:00 PM", "4:00 PM"
-  ];
-  
-  const handleSubmit = async () => {
-    if (!date || !selectedTime || !reason || !selectedCounselor) {
-      toast.error("Please fill in all fields");
-      return;
-    }
-    
-    try {
-      await createAppointment.mutateAsync({
-        counselor_id: selectedCounselor,
-        date: date.toISOString().split('T')[0],
-        time: selectedTime,
-        reason
-      });
+  // Use database counselors if available, fallback to static data
+  const counselors = dbCounselors.length > 0 
+    ? dbCounselors.map(c => ({
+        id: c.id,
+        name: c.full_name,
+        specialty: "Mental Health Counseling", // Default specialty
+        calendlyUrl: `https://calendly.com/${c.full_name.toLowerCase().replace(/\s+/g, '-')}` // Generated URL - should be configured per counselor
+      }))
+    : counselorsData;
 
-      // Reset form
-      setDate(undefined);
-      setSelectedTime(null);
-      setReason("");
-      setSelectedCounselor(null);
-    } catch (error) {
-      // Error is handled in the mutation
-    }
-  };
+  const selectedCounselorData = counselors.find(c => c.id === selectedCounselor);
+
+  useEffect(() => {
+    // Load Calendly widget script
+    const script = document.createElement('script');
+    script.src = 'https://assets.calendly.com/assets/external/widget.js';
+    script.async = true;
+    document.body.appendChild(script);
+
+    return () => {
+      document.body.removeChild(script);
+    };
+  }, []);
   
   return (
     <Layout>
@@ -61,70 +57,38 @@ const BookMeeting = () => {
       </div>
       
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        {/* Calendar section */}
+        {/* Calendly Widget section */}
         <Card className="bridge-card lg:col-span-2">
           <CardHeader>
-            <CardTitle>Select Date & Time</CardTitle>
-            <CardDescription>Choose when you'd like to meet</CardDescription>
+            <CardTitle>Schedule Your Appointment</CardTitle>
+            <CardDescription>
+              {selectedCounselorData 
+                ? `Book directly with ${selectedCounselorData.name}` 
+                : "Select a counselor to see their available times"
+              }
+            </CardDescription>
           </CardHeader>
           <CardContent>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              <div>
-                <h3 className="text-lg font-medium mb-3">Date</h3>
-                <Calendar
-                  mode="single"
-                  selected={date}
-                  onSelect={setDate}
-                  className="rounded-2xl border"
-                  disabled={(date) => 
-                    date < new Date() || // Can't book in the past
-                    date.getDay() === 0 || // Can't book on Sunday
-                    date.getDay() === 6 // Can't book on Saturday
-                  }
-                />
+            {selectedCounselorData ? (
+              <div className="min-h-[600px]">
+                <div 
+                  className="calendly-inline-widget" 
+                  data-url={selectedCounselorData.calendlyUrl}
+                  style={{ minWidth: '320px', height: '600px' }}
+                ></div>
               </div>
-              
-              <div>
-                <h3 className="text-lg font-medium mb-3">Available Times</h3>
-                {date ? (
-                  <div className="grid grid-cols-2 gap-2">
-                    {availableTimes.map((time) => (
-                      <Button
-                        key={time}
-                        variant={selectedTime === time ? "default" : "outline"}
-                        className={`rounded-xl ${
-                          selectedTime === time 
-                            ? "bg-bridge-primary text-white" 
-                            : "hover:bg-bridge-accent/20"
-                        }`}
-                        onClick={() => setSelectedTime(time)}
-                      >
-                        {time}
-                      </Button>
-                    ))}
-                  </div>
-                ) : (
-                  <div className="flex items-center justify-center h-40 bg-bridge-muted/20 rounded-2xl">
-                    <p className="text-bridge-text/70">Please select a date first</p>
-                  </div>
-                )}
+            ) : (
+              <div className="flex items-center justify-center h-96 bg-bridge-muted/20 rounded-2xl">
+                <div className="text-center">
+                  <h3 className="text-lg font-medium text-bridge-text mb-2">Select a Counselor</h3>
+                  <p className="text-bridge-text/70">Choose a counselor from the list to view their calendar and book an appointment</p>
+                </div>
               </div>
-            </div>
-            
-            <div className="mt-6">
-              <h3 className="text-lg font-medium mb-3">Reason for Meeting</h3>
-              <Textarea
-                value={reason}
-                onChange={(e) => setReason(e.target.value)}
-                placeholder="Briefly describe what you'd like to discuss..."
-                className="bridge-input resize-none"
-                rows={4}
-              />
-            </div>
+            )}
           </CardContent>
         </Card>
         
-        {/* Counselor selection and submission */}
+        {/* Counselor selection */}
         <div className="space-y-6">
           <Card className="bridge-card">
             <CardHeader>
@@ -132,55 +96,70 @@ const BookMeeting = () => {
               <CardDescription>Choose who you'd like to meet with</CardDescription>
             </CardHeader>
             <CardContent>
-              <div className="space-y-3">
-                {counselors.map((counselor) => (
-                  <div 
-                    key={counselor.id} 
-                    className="flex items-center space-x-3 p-3 rounded-2xl hover:bg-bridge-muted/20 cursor-pointer border border-bridge-muted/30"
-                    onClick={() => setSelectedCounselor(counselor.id.toString())}
-                  >
-                    <div className="w-10 h-10 rounded-full bg-bridge-accent flex items-center justify-center text-bridge-primary font-medium">
-                      {counselor.name.charAt(0)}
+              {isLoading ? (
+                <div className="space-y-3">
+                  {[1, 2].map((i) => (
+                    <div key={i} className="flex items-center space-x-3 p-3">
+                      <div className="w-10 h-10 rounded-full bg-bridge-muted/30 animate-pulse"></div>
+                      <div className="flex-1">
+                        <div className="h-4 bg-bridge-muted/30 rounded animate-pulse mb-1"></div>
+                        <div className="h-3 bg-bridge-muted/20 rounded animate-pulse w-2/3"></div>
+                      </div>
                     </div>
-                    <div>
-                      <p className="font-medium">{counselor.name}</p>
-                      <p className="text-sm text-bridge-text/70">{counselor.specialty}</p>
+                  ))}
+                </div>
+              ) : (
+                <div className="space-y-3">
+                  {counselors.map((counselor) => (
+                    <div 
+                      key={counselor.id} 
+                      className={`flex items-center space-x-3 p-3 rounded-2xl cursor-pointer border transition-all ${
+                        selectedCounselor === counselor.id 
+                          ? "bg-bridge-primary/10 border-bridge-primary/30" 
+                          : "hover:bg-bridge-muted/20 border-bridge-muted/30"
+                      }`}
+                      onClick={() => setSelectedCounselor(counselor.id)}
+                    >
+                      <div className="w-10 h-10 rounded-full bg-bridge-accent flex items-center justify-center text-bridge-primary font-medium">
+                        {counselor.name.charAt(0)}
+                      </div>
+                      <div className="flex-1">
+                        <p className="font-medium">{counselor.name}</p>
+                        <p className="text-sm text-bridge-text/70">{counselor.specialty}</p>
+                      </div>
+                      {selectedCounselor === counselor.id && (
+                        <div className="w-3 h-3 rounded-full bg-bridge-primary"></div>
+                      )}
                     </div>
-                  </div>
-                ))}
-              </div>
+                  ))}
+                </div>
+              )}
             </CardContent>
           </Card>
           
           <Card className="bridge-card">
             <CardHeader>
-              <CardTitle>Summary</CardTitle>
+              <CardTitle>How It Works</CardTitle>
             </CardHeader>
             <CardContent>
-              <div className="space-y-3 mb-6">
-                <div>
-                  <p className="text-sm text-bridge-text/70">Date</p>
-                  <p className="font-medium">
-                    {date ? date.toLocaleDateString() : "Not selected"}
-                  </p>
+              <div className="space-y-3 text-sm text-bridge-text/70">
+                <div className="flex items-start space-x-2">
+                  <div className="w-5 h-5 rounded-full bg-bridge-primary/20 flex items-center justify-center text-xs font-medium text-bridge-primary mt-0.5">1</div>
+                  <p>Select a counselor from the list above</p>
                 </div>
-                <div>
-                  <p className="text-sm text-bridge-text/70">Time</p>
-                  <p className="font-medium">{selectedTime || "Not selected"}</p>
+                <div className="flex items-start space-x-2">
+                  <div className="w-5 h-5 rounded-full bg-bridge-primary/20 flex items-center justify-center text-xs font-medium text-bridge-primary mt-0.5">2</div>
+                  <p>Choose an available time slot from their calendar</p>
                 </div>
-                <div>
-                  <p className="text-sm text-bridge-text/70">Counselor</p>
-                  <p className="font-medium">{selectedCounselor ? counselors.find(c => c.id.toString() === selectedCounselor)?.name : "Not selected"}</p>
+                <div className="flex items-start space-x-2">
+                  <div className="w-5 h-5 rounded-full bg-bridge-primary/20 flex items-center justify-center text-xs font-medium text-bridge-primary mt-0.5">3</div>
+                  <p>Complete the booking form with your details</p>
+                </div>
+                <div className="flex items-start space-x-2">
+                  <div className="w-5 h-5 rounded-full bg-bridge-primary/20 flex items-center justify-center text-xs font-medium text-bridge-primary mt-0.5">4</div>
+                  <p>Receive confirmation and calendar invite via email</p>
                 </div>
               </div>
-              
-              <Button 
-                onClick={handleSubmit} 
-                className="bridge-button-primary w-full"
-                disabled={!date || !selectedTime || !reason || !selectedCounselor}
-              >
-                Request Appointment
-              </Button>
             </CardContent>
           </Card>
         </div>
