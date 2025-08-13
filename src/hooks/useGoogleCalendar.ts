@@ -10,22 +10,22 @@ export interface AvailabilityResponse {
 export const useGoogleCalendar = () => {
   const connectGoogleCalendar = useMutation({
     mutationFn: async () => {
-      // This would typically redirect to Google OAuth
-      // For now, we'll simulate the connection
+      // Redirect to Google OAuth for calendar access
       const { error } = await supabase.auth.signInWithOAuth({
         provider: 'google',
         options: {
-          scopes: 'https://www.googleapis.com/auth/calendar.events',
+          scopes: 'https://www.googleapis.com/auth/calendar.events https://www.googleapis.com/auth/userinfo.email https://www.googleapis.com/auth/userinfo.profile openid',
           redirectTo: `${window.location.origin}/calendar-callback`
         }
       });
 
       if (error) throw error;
-    },
-    onSuccess: () => {
-      toast.success("Google Calendar connected successfully");
+      
+      // The success will be handled in the callback page
+      return { success: true };
     },
     onError: (error) => {
+      console.error('Google Calendar connection error:', error);
       toast.error(`Failed to connect Google Calendar: ${error.message}`);
     },
   });
