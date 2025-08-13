@@ -73,7 +73,7 @@ const StudentAppointments = () => {
       <div className="flex justify-between items-center mb-6">
         <h2 className="text-xl font-semibold">All Appointments</h2>
         <Button asChild className="bridge-button-primary">
-          <Link to="/student/counselors">Book New Meeting</Link>
+          <Link to="/student/book">Book New Meeting</Link>
         </Button>
       </div>
       
@@ -133,7 +133,7 @@ const StudentAppointments = () => {
                 You don't have any confirmed appointments scheduled.
               </p>
               <Button asChild className="bridge-button-primary">
-                <Link to="/student/counselors">Book a Meeting</Link>
+                <Link to="/student/book">Book a Meeting</Link>
               </Button>
             </div>
           )}
@@ -238,7 +238,7 @@ const AppointmentCard = ({ appointment, counselorName, onStatusUpdate }: Appoint
               
               {appointment.status === 'completed' && (
                 <Button variant="outline" size="sm" asChild>
-                  <Link to="/student/counselors">Book Follow-up</Link>
+                  <Link to="/student/book">Book Follow-up</Link>
                 </Button>
               )}
             </div>
