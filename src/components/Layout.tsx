@@ -45,6 +45,7 @@ const Layout = ({ children }: LayoutProps) => {
     ? [
         { path: '/student', icon: <Home size={20} />, label: 'Dashboard' },
         { path: '/student/counselors', icon: <Users size={20} />, label: 'Counselors' },
+        { path: '/student/appointments', icon: <Calendar size={20} />, label: 'Appointments' },
         { path: '/student/resources', icon: <BookOpen size={20} />, label: 'Resources' },
         { path: '/student/mood', icon: <SmilePlus size={20} />, label: 'Mood Check-in' },
       ]
