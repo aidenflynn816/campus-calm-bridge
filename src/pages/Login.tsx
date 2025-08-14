@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { Link } from "react-router-dom";
 import { useAuth } from "../contexts/AuthContext";
@@ -7,23 +6,20 @@ import { Input } from "@/components/ui/input";
 import { toast } from "sonner";
 import { Calendar, MessageSquare, BookOpen, LogIn } from "lucide-react";
 import { motion } from "framer-motion";
-
 const Login = () => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const { signIn } = useAuth();
-
+  const {
+    signIn
+  } = useAuth();
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    
     if (!email || !password) {
       toast.error("Please fill in all fields");
       return;
     }
-    
     setIsSubmitting(true);
-    
     try {
       await signIn(email, password);
     } catch (error) {
@@ -35,41 +31,36 @@ const Login = () => {
 
   // Animation variants
   const containerVariants = {
-    hidden: { opacity: 0 },
-    visible: { 
+    hidden: {
+      opacity: 0
+    },
+    visible: {
       opacity: 1,
-      transition: { 
+      transition: {
         staggerChildren: 0.1,
         delayChildren: 0.2
       }
     }
   };
-  
   const itemVariants = {
-    hidden: { opacity: 0, y: 20 },
-    visible: { 
-      opacity: 1, 
+    hidden: {
+      opacity: 0,
+      y: 20
+    },
+    visible: {
+      opacity: 1,
       y: 0,
-      transition: { duration: 0.5 }
+      transition: {
+        duration: 0.5
+      }
     }
   };
-
-  return (
-    <div className="min-h-screen flex flex-col md:flex-row bg-bridge-background">
+  return <div className="min-h-screen flex flex-col md:flex-row bg-bridge-background">
       {/* Left side - Form */}
-      <motion.div 
-        initial="hidden"
-        animate="visible"
-        variants={containerVariants}
-        className="w-full md:w-1/2 p-6 md:p-10 lg:p-16 flex flex-col justify-center"
-      >
+      <motion.div initial="hidden" animate="visible" variants={containerVariants} className="w-full md:w-1/2 p-6 md:p-10 lg:p-16 flex flex-col justify-center">
         <div className="max-w-md w-full mx-auto">
           <motion.div variants={itemVariants} className="flex items-center space-x-3 mb-8">
-            <img 
-              src="/lovable-uploads/ca0b6e19-c587-4ef5-9c6e-a46c2594cffc.png" 
-              alt="Bridge Logo" 
-              className="w-12 h-12"
-            />
+            <img src="/lovable-uploads/ca0b6e19-c587-4ef5-9c6e-a46c2594cffc.png" alt="Bridge Logo" className="w-12 h-12" />
             <h1 className="text-2xl font-medium text-bridge-primary">Bridge</h1>
           </motion.div>
           
@@ -81,15 +72,7 @@ const Login = () => {
               <label htmlFor="email" className="block text-sm font-medium">
                 Email
               </label>
-              <Input
-                id="email"
-                type="email"
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                className="bridge-input"
-                placeholder="you@school.edu"
-                disabled={isSubmitting}
-              />
+              <Input id="email" type="email" value={email} onChange={e => setEmail(e.target.value)} className="bridge-input" placeholder="you@school.edu" disabled={isSubmitting} />
             </motion.div>
             
             <motion.div variants={itemVariants} className="space-y-2">
@@ -101,23 +84,11 @@ const Login = () => {
                   Forgot password?
                 </a>
               </div>
-              <Input
-                id="password"
-                type="password"
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                className="bridge-input"
-                placeholder="••••••••"
-                disabled={isSubmitting}
-              />
+              <Input id="password" type="password" value={password} onChange={e => setPassword(e.target.value)} className="bridge-input" placeholder="••••••••" disabled={isSubmitting} />
             </motion.div>
             
             <motion.div variants={itemVariants}>
-              <Button
-                type="submit"
-                className="bridge-button-primary w-full flex items-center justify-center gap-2"
-                disabled={isSubmitting}
-              >
+              <Button type="submit" className="bridge-button-primary w-full flex items-center justify-center gap-2" disabled={isSubmitting}>
                 <LogIn size={18} />
                 {isSubmitting ? "Signing in..." : "Sign in"}
               </Button>
@@ -132,28 +103,22 @@ const Login = () => {
             </Link>
           </motion.p>
           
-          <motion.div variants={itemVariants} className="mt-10 text-sm text-gray-500 p-4 bg-gray-50 rounded-xl">
-            <p className="font-medium mb-2">Demo accounts (for testing):</p>
-            <p className="flex items-center mb-1">
-              <span className="w-16 inline-block">Student:</span> 
-              <code className="bg-gray-100 px-2 py-1 rounded">student@example.com / password</code>
-            </p>
-            <p className="flex items-center">
-              <span className="w-16 inline-block">Counselor:</span> 
-              <code className="bg-gray-100 px-2 py-1 rounded">counselor@example.com / password</code>
-            </p>
-          </motion.div>
+          
         </div>
       </motion.div>
       
       {/* Right side - Image/Info */}
       <div className="hidden md:block md:w-1/2 bg-bridge-primary p-10 flex items-center justify-center overflow-hidden relative">
-        <motion.div 
-          initial={{ opacity: 0, scale: 0.9 }}
-          animate={{ opacity: 1, scale: 1 }}
-          transition={{ duration: 0.8, delay: 0.4 }}
-          className="max-w-md text-white relative z-10"
-        >
+        <motion.div initial={{
+        opacity: 0,
+        scale: 0.9
+      }} animate={{
+        opacity: 1,
+        scale: 1
+      }} transition={{
+        duration: 0.8,
+        delay: 0.4
+      }} className="max-w-md text-white relative z-10">
           <div className="bg-white/10 rounded-3xl p-8 backdrop-blur border border-white/10 shadow-lg">
             <h2 className="text-2xl font-bold mb-4">Mental Wellness Support for Students</h2>
             <p className="mb-6">
@@ -188,8 +153,6 @@ const Login = () => {
           <div className="absolute bottom-20 left-10 w-80 h-80 rounded-full bg-white/10 blur-3xl"></div>
         </div>
       </div>
-    </div>
-  );
+    </div>;
 };
-
 export default Login;
