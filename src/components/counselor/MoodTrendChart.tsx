@@ -77,6 +77,12 @@ const MoodTrendChart = ({ data, title = "Mood Trend Analysis" }: MoodTrendChartP
                 tick={{ fontSize: 12 }}
                 label={{ value: 'Average Mood', angle: -90, position: 'insideLeft' }}
               />
+              <YAxis 
+                yAxisId="right"
+                orientation="right"
+                tick={{ fontSize: 12 }}
+                label={{ value: 'Check-ins', angle: 90, position: 'insideRight' }}
+              />
               <Tooltip content={<CustomTooltip />} />
               <Legend />
               <Line 
