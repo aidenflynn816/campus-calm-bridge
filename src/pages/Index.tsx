@@ -14,7 +14,7 @@ const Index = () => {
   // Redirect authenticated users to their dashboard
   useEffect(() => {
     if (user) {
-      navigate(user.role === 'student' ? '/student' : '/counselor');
+      navigate(user.role === 'student' ? '/student' : user.role === 'counselor' ? '/counselor/mood-insights' : '/student');
     }
   }, [user, navigate]);
   

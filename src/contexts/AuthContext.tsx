@@ -126,7 +126,9 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
               setUser(newUser);
               
               // Handle role-based redirect after successful authentication
-              if (event === 'SIGNED_IN') {
+              // Check if we're currently on login/register pages and redirect accordingly
+              const currentPath = window.location.pathname;
+              if (currentPath === '/login' || currentPath === '/register' || currentPath === '/') {
                 setTimeout(() => {
                   if (newUser.role === 'counselor') {
                     navigate('/counselor/mood-insights');
