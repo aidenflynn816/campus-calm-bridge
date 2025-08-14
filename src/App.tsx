@@ -8,7 +8,7 @@ import { AuthProvider } from "./contexts/AuthContext";
 import Login from "./pages/Login";
 import Register from "./pages/Register";
 import StudentDashboard from "./pages/student/Dashboard";
-import CounselorDashboard from "./pages/counselor/Dashboard";
+
 import StudentCounselors from "./pages/student/Counselors";
 import Messages from "./pages/student/Messages";
 import StudentAppointments from "./pages/student/Appointments";
@@ -109,11 +109,7 @@ const App = () => (
           {/* Counselor routes */}
           <Route 
             path="/counselor" 
-            element={
-              <ProtectedRoute allowedRoles={["counselor"]}>
-                <CounselorDashboard />
-              </ProtectedRoute>
-            } 
+            element={<Navigate to="/counselor/mood-insights" replace />} 
           />
           <Route 
             path="/counselor/appointments" 
