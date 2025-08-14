@@ -73,6 +73,7 @@ const MoodTrendChart = ({ data, title = "Mood Trend Analysis" }: MoodTrendChartP
                 height={60}
               />
               <YAxis 
+                yAxisId="left"
                 domain={[1, 5]}
                 tick={{ fontSize: 12 }}
                 label={{ value: 'Average Mood', angle: -90, position: 'insideLeft' }}
@@ -93,6 +94,7 @@ const MoodTrendChart = ({ data, title = "Mood Trend Analysis" }: MoodTrendChartP
                 dot={{ fill: "hsl(var(--primary))", strokeWidth: 2, r: 4 }}
                 activeDot={{ r: 6, stroke: "hsl(var(--primary))", strokeWidth: 2 }}
                 name="Average Mood"
+                yAxisId="left"
               />
               <Line 
                 type="monotone" 
