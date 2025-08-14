@@ -4,8 +4,7 @@ import Layout from "../../components/Layout";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
-import { MessageSquare, TrendingUp, BookOpen, AlertCircle, ArrowRight } from "lucide-react";
+import { MessageSquare, TrendingUp, BookOpen, ArrowRight } from "lucide-react";
 import { useAuth } from "../../contexts/AuthContext";
 import { useCounselorMoodData } from "@/hooks/useCounselorMoodData";
 import { useQuery } from "@tanstack/react-query";
@@ -15,7 +14,7 @@ const CounselorDashboard = () => {
   const {
     user
   } = useAuth();
-  const [showResourcesGuide, setShowResourcesGuide] = useState(false);
+  
 
   // Get mood data for top issue analysis
   const {
@@ -60,7 +59,7 @@ const CounselorDashboard = () => {
         </div>
 
         {/* Main Dashboard Cards */}
-        <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
+        <div className="grid gap-6 md:grid-cols-2">
           {/* Unread Messages Card */}
           <Card className="bridge-card cursor-pointer hover:shadow-lg transition-shadow" onClick={() => navigate('/counselor/messages')}>
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
@@ -98,80 +97,6 @@ const CounselorDashboard = () => {
                 </div> : <p className="text-sm text-bridge-text/70">Great day so far!</p>}
             </CardContent>
           </Card>
-
-          {/* Resources Guide Card */}
-          <Dialog open={showResourcesGuide} onOpenChange={setShowResourcesGuide}>
-            <DialogTrigger asChild>
-              <Card className="bridge-card cursor-pointer hover:shadow-lg transition-shadow">
-                <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                  <CardTitle className="text-sm font-medium">Resource Center</CardTitle>
-                  <BookOpen className="h-4 w-4 text-green-500" />
-                </CardHeader>
-                <CardContent>
-                  <div className="text-lg font-bold text-bridge-primary mb-2">
-                    Quick Access
-                  </div>
-                  <div className="flex items-center gap-2">
-                    
-                    <ArrowRight className="h-4 w-4 text-bridge-text/70" />
-                  </div>
-                </CardContent>
-              </Card>
-            </DialogTrigger>
-            
-            <DialogContent>
-              <DialogHeader>
-                <DialogTitle className="flex items-center gap-2">
-                  <BookOpen className="h-5 w-5 text-green-500" />
-                  Resource Center Guide
-                </DialogTitle>
-              </DialogHeader>
-              
-              <div className="space-y-4">
-                <div className="flex items-start gap-3">
-                  <AlertCircle className="h-5 w-5 text-blue-500 mt-1" />
-                  <div>
-                    <h3 className="font-semibold text-bridge-primary">Access Educational Materials</h3>
-                    <p className="text-sm text-bridge-text/80">
-                      Browse through curated resources, articles, and educational content to help your students.
-                    </p>
-                  </div>
-                </div>
-                
-                <div className="flex items-start gap-3">
-                  <AlertCircle className="h-5 w-5 text-purple-500 mt-1" />
-                  <div>
-                    <h3 className="font-semibold text-bridge-primary">Create & Share Content</h3>
-                    <p className="text-sm text-bridge-text/80">
-                      Upload new resources, create custom content, and organize materials by category.
-                    </p>
-                  </div>
-                </div>
-                
-                <div className="flex items-start gap-3">
-                  <AlertCircle className="h-5 w-5 text-orange-500 mt-1" />
-                  <div>
-                    <h3 className="font-semibold text-bridge-primary">Track Engagement</h3>
-                    <p className="text-sm text-bridge-text/80">
-                      Monitor which resources are most helpful and frequently accessed by students.
-                    </p>
-                  </div>
-                </div>
-                
-                <div className="flex gap-3 pt-4">
-                  <Button onClick={() => {
-                  navigate('/counselor/resources');
-                  setShowResourcesGuide(false);
-                }} className="flex-1">
-                    Go to Resources
-                  </Button>
-                  <Button variant="outline" onClick={() => setShowResourcesGuide(false)}>
-                    Close
-                  </Button>
-                </div>
-              </div>
-            </DialogContent>
-          </Dialog>
         </div>
 
         {/* Quick Navigation */}
