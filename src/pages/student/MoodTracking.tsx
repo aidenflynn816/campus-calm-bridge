@@ -12,6 +12,7 @@ import { Dialog, DialogContent, DialogTrigger } from "@/components/ui/dialog";
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from "@/components/ui/alert-dialog";
 import { useMoodCheckins, MOOD_OPTIONS, DAILY_ISSUES, type CreateMoodCheckinData } from "@/hooks/useMoodCheckins";
 import MoodChart from "@/components/MoodChart";
+import IssuesChart from "@/components/IssuesChart";
 
 const MoodTracking = () => {
   const [selectedMood, setSelectedMood] = useState<number | null>(null);
@@ -26,8 +27,12 @@ const MoodTracking = () => {
     updateMoodCheckin, 
     deleteMoodCheckin, 
     todayCheckin,
-    getMoodTrendData 
+    getMoodTrendData,
+    getIssuesFrequencyData
   } = useMoodCheckins();
+
+  const trendData = getMoodTrendData(30);
+  const issuesData = getIssuesFrequencyData(30);
 
   const handleSubmitMood = () => {
     if (!selectedMood) return;
@@ -88,7 +93,6 @@ const MoodTracking = () => {
     deleteMoodCheckin.mutate(id);
   };
 
-  const trendData = getMoodTrendData(30);
 
   if (isLoading) {
     return (
@@ -344,11 +348,16 @@ const MoodTracking = () => {
         <Tabs defaultValue="trend" className="space-y-4">
           <TabsList className="bg-bridge-muted/30">
             <TabsTrigger value="trend">Mood Trend</TabsTrigger>
+            <TabsTrigger value="issues">Issues Frequency</TabsTrigger>
             <TabsTrigger value="history">History Log</TabsTrigger>
           </TabsList>
           
           <TabsContent value="trend">
             <MoodChart data={trendData} title="Your Mood Trend (Last 30 Days)" />
+          </TabsContent>
+
+          <TabsContent value="issues">
+            <IssuesChart data={issuesData} title="Issues Frequency (Last 30 Days)" />
           </TabsContent>
           
           <TabsContent value="history">

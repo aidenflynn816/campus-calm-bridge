@@ -232,6 +232,33 @@ export const useMoodCheckins = (targetUserId?: string) => {
       }));
   };
 
+  // Get issues frequency data for charts
+  const getIssuesFrequencyData = (days: number = 30) => {
+    const cutoffDate = new Date();
+    cutoffDate.setDate(cutoffDate.getDate() - days);
+    
+    const recentCheckins = moodCheckins.filter(checkin => 
+      new Date(checkin.created_at) >= cutoffDate
+    );
+
+    // Count occurrences of each issue
+    const issueCounts = DAILY_ISSUES.map(issue => {
+      const count = recentCheckins.reduce((acc, checkin) => {
+        if (checkin.daily_issues && checkin.daily_issues.includes(issue.id)) {
+          return acc + 1;
+        }
+        return acc;
+      }, 0);
+      
+      return {
+        issue: issue.label,
+        count: count,
+      };
+    });
+
+    return issueCounts;
+  };
+
   return {
     moodCheckins,
     isLoading,
@@ -241,5 +268,6 @@ export const useMoodCheckins = (targetUserId?: string) => {
     deleteMoodCheckin,
     todayCheckin,
     getMoodTrendData,
+    getIssuesFrequencyData,
   };
 };
