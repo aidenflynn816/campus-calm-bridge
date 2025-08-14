@@ -164,29 +164,6 @@ const MoodInsights = () => {
             </Tabs>
           </>
         )}
-
-        {/* Quick Actions */}
-        <Card className="bridge-card">
-          <CardHeader>
-            <CardTitle>Quick Actions</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="flex flex-wrap gap-4">
-              <Button variant="outline" size="sm">
-                Export Data
-              </Button>
-              <Button variant="outline" size="sm">
-                Generate Report
-              </Button>
-              <Button variant="outline" size="sm">
-                Schedule Alert
-              </Button>
-              <Button variant="outline" size="sm">
-                Share Insights
-              </Button>
-            </div>
-          </CardContent>
-        </Card>
       </div>
     </Layout>
   );
