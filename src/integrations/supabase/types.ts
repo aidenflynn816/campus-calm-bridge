@@ -197,9 +197,6 @@ export type Database = {
           calendly_url: string | null
           created_at: string
           full_name: string | null
-          google_access_token: string | null
-          google_calendar_id: string | null
-          google_refresh_token: string | null
           id: string
           role: string
           updated_at: string
@@ -211,9 +208,6 @@ export type Database = {
           calendly_url?: string | null
           created_at?: string
           full_name?: string | null
-          google_access_token?: string | null
-          google_calendar_id?: string | null
-          google_refresh_token?: string | null
           id?: string
           role: string
           updated_at?: string
@@ -225,9 +219,6 @@ export type Database = {
           calendly_url?: string | null
           created_at?: string
           full_name?: string | null
-          google_access_token?: string | null
-          google_calendar_id?: string | null
-          google_refresh_token?: string | null
           id?: string
           role?: string
           updated_at?: string
@@ -305,6 +296,36 @@ export type Database = {
           chat_with_user_id?: string
           id?: string
           is_typing?: boolean
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      user_google_tokens: {
+        Row: {
+          created_at: string
+          google_access_token: string | null
+          google_calendar_id: string | null
+          google_refresh_token: string | null
+          id: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          google_access_token?: string | null
+          google_calendar_id?: string | null
+          google_refresh_token?: string | null
+          id?: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          google_access_token?: string | null
+          google_calendar_id?: string | null
+          google_refresh_token?: string | null
+          id?: string
           updated_at?: string
           user_id?: string
         }
