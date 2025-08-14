@@ -9,6 +9,7 @@ export interface MoodCheckin {
   mood_rating: number;
   mood_emoji: string;
   notes?: string;
+  daily_issues?: string[];
   created_at: string;
   updated_at: string;
 }
@@ -17,6 +18,7 @@ export interface CreateMoodCheckinData {
   mood_rating: number;
   mood_emoji: string;
   notes?: string;
+  daily_issues?: string[];
 }
 
 export const MOOD_OPTIONS = [
@@ -65,6 +67,14 @@ export const MOOD_OPTIONS = [
     icon: SmilePlus,
     description: "Feeling amazing"
   },
+];
+
+export const DAILY_ISSUES = [
+  { id: 'bullying', label: 'Bullying' },
+  { id: 'social_isolation', label: 'Social isolation' },
+  { id: 'conflict_student_staff', label: 'Conflict with student/staff' },
+  { id: 'burnout', label: 'Burnout' },
+  { id: 'anxiety', label: 'Anxiety' },
 ];
 
 export const useMoodCheckins = (targetUserId?: string) => {
@@ -118,6 +128,7 @@ export const useMoodCheckins = (targetUserId?: string) => {
             mood_rating: data.mood_rating,
             mood_emoji: data.mood_emoji,
             notes: data.notes,
+            daily_issues: data.daily_issues || [],
           }
         ])
         .select()

@@ -160,6 +160,7 @@ export type Database = {
       mood_check_ins: {
         Row: {
           created_at: string
+          daily_issues: string[] | null
           id: string
           mood_emoji: string
           mood_rating: number
@@ -169,6 +170,7 @@ export type Database = {
         }
         Insert: {
           created_at?: string
+          daily_issues?: string[] | null
           id?: string
           mood_emoji: string
           mood_rating: number
@@ -178,6 +180,7 @@ export type Database = {
         }
         Update: {
           created_at?: string
+          daily_issues?: string[] | null
           id?: string
           mood_emoji?: string
           mood_rating?: number

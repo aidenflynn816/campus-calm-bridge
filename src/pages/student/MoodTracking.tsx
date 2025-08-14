@@ -6,15 +6,17 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Textarea } from "@/components/ui/textarea";
 import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Checkbox } from "@/components/ui/checkbox";
 import { Calendar, Clock, Edit, Trash2 } from "lucide-react";
 import { Dialog, DialogContent, DialogTrigger } from "@/components/ui/dialog";
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from "@/components/ui/alert-dialog";
-import { useMoodCheckins, MOOD_OPTIONS, type CreateMoodCheckinData } from "@/hooks/useMoodCheckins";
+import { useMoodCheckins, MOOD_OPTIONS, DAILY_ISSUES, type CreateMoodCheckinData } from "@/hooks/useMoodCheckins";
 import MoodChart from "@/components/MoodChart";
 
 const MoodTracking = () => {
   const [selectedMood, setSelectedMood] = useState<number | null>(null);
   const [notes, setNotes] = useState("");
+  const [selectedIssues, setSelectedIssues] = useState<string[]>([]);
   const [editingCheckin, setEditingCheckin] = useState<any>(null);
   
   const { 
@@ -37,12 +39,14 @@ const MoodTracking = () => {
       mood_rating: selectedMood,
       mood_emoji: selectedOption.emoji,
       notes: notes.trim() || undefined,
+      daily_issues: selectedIssues,
     };
 
     createMoodCheckin.mutate(data, {
       onSuccess: () => {
         setSelectedMood(null);
         setNotes("");
+        setSelectedIssues([]);
       }
     });
   };
@@ -57,6 +61,7 @@ const MoodTracking = () => {
       mood_rating: selectedMood,
       mood_emoji: selectedOption.emoji,
       notes: notes.trim() || undefined,
+      daily_issues: selectedIssues,
     };
 
     updateMoodCheckin.mutate(
@@ -66,6 +71,7 @@ const MoodTracking = () => {
           setEditingCheckin(null);
           setSelectedMood(null);
           setNotes("");
+          setSelectedIssues([]);
         }
       }
     );
@@ -75,6 +81,7 @@ const MoodTracking = () => {
     setEditingCheckin(checkin);
     setSelectedMood(checkin.mood_rating);
     setNotes(checkin.notes || "");
+    setSelectedIssues(checkin.daily_issues || []);
   };
 
   const handleDeleteCheckin = (id: string) => {
@@ -138,6 +145,21 @@ const MoodTracking = () => {
                     {todayCheckin.notes && (
                       <p className="text-bridge-text/70 mt-1">{todayCheckin.notes}</p>
                     )}
+                    {todayCheckin.daily_issues && todayCheckin.daily_issues.length > 0 && (
+                      <div className="mt-2">
+                        <p className="text-sm font-medium text-bridge-text/80 mb-1">Issues encountered:</p>
+                        <div className="flex flex-wrap gap-1">
+                          {todayCheckin.daily_issues.map((issueId) => {
+                            const issue = DAILY_ISSUES.find(i => i.id === issueId);
+                            return issue ? (
+                              <Badge key={issueId} variant="secondary" className="text-xs">
+                                {issue.label}
+                              </Badge>
+                            ) : null;
+                          })}
+                        </div>
+                      </div>
+                    )}
                   </div>
                 </div>
                 <div className="flex gap-2">
@@ -191,6 +213,33 @@ const MoodTracking = () => {
                               rows={3}
                             />
                           </div>
+
+                          <div>
+                            <label className="text-sm font-medium mb-3 block">Did you encounter any of these issues?</label>
+                            <div className="grid grid-cols-1 gap-3">
+                              {DAILY_ISSUES.map((issue) => (
+                                <div key={issue.id} className="flex items-center space-x-2">
+                                  <Checkbox
+                                    id={`edit-${issue.id}`}
+                                    checked={selectedIssues.includes(issue.id)}
+                                    onCheckedChange={(checked) => {
+                                      if (checked) {
+                                        setSelectedIssues([...selectedIssues, issue.id]);
+                                      } else {
+                                        setSelectedIssues(selectedIssues.filter(id => id !== issue.id));
+                                      }
+                                    }}
+                                  />
+                                  <label
+                                    htmlFor={`edit-${issue.id}`}
+                                    className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70 cursor-pointer"
+                                  >
+                                    {issue.label}
+                                  </label>
+                                </div>
+                              ))}
+                            </div>
+                          </div>
                         </div>
                         
                         <div className="flex gap-2">
@@ -207,6 +256,7 @@ const MoodTracking = () => {
                               setEditingCheckin(null);
                               setSelectedMood(null);
                               setNotes("");
+                              setSelectedIssues([]);
                             }}
                           >
                             Cancel
@@ -249,6 +299,33 @@ const MoodTracking = () => {
                     className="bridge-input resize-none"
                     rows={3}
                   />
+                </div>
+
+                <div>
+                  <label className="text-sm font-medium mb-3 block">Did you encounter any of these issues today?</label>
+                  <div className="grid grid-cols-1 gap-3">
+                    {DAILY_ISSUES.map((issue) => (
+                      <div key={issue.id} className="flex items-center space-x-2">
+                        <Checkbox
+                          id={issue.id}
+                          checked={selectedIssues.includes(issue.id)}
+                          onCheckedChange={(checked) => {
+                            if (checked) {
+                              setSelectedIssues([...selectedIssues, issue.id]);
+                            } else {
+                              setSelectedIssues(selectedIssues.filter(id => id !== issue.id));
+                            }
+                          }}
+                        />
+                        <label
+                          htmlFor={issue.id}
+                          className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70 cursor-pointer"
+                        >
+                          {issue.label}
+                        </label>
+                      </div>
+                    ))}
+                  </div>
                 </div>
                 
                 <Button 
@@ -318,6 +395,21 @@ const MoodTracking = () => {
                               {checkin.notes && (
                                 <p className="text-bridge-text/80 text-sm">{checkin.notes}</p>
                               )}
+                              {checkin.daily_issues && checkin.daily_issues.length > 0 && (
+                                <div className="mt-2">
+                                  <p className="text-xs font-medium text-bridge-text/70 mb-1">Issues encountered:</p>
+                                  <div className="flex flex-wrap gap-1">
+                                    {checkin.daily_issues.map((issueId) => {
+                                      const issue = DAILY_ISSUES.find(i => i.id === issueId);
+                                      return issue ? (
+                                        <Badge key={issueId} variant="secondary" className="text-xs">
+                                          {issue.label}
+                                        </Badge>
+                                      ) : null;
+                                    })}
+                                  </div>
+                                </div>
+                              )}
                             </div>
                           </div>
                           
@@ -373,6 +465,33 @@ const MoodTracking = () => {
                                         rows={3}
                                       />
                                     </div>
+
+                                    <div>
+                                      <label className="text-sm font-medium mb-3 block">Did you encounter any of these issues?</label>
+                                      <div className="grid grid-cols-1 gap-3">
+                                        {DAILY_ISSUES.map((issue) => (
+                                          <div key={issue.id} className="flex items-center space-x-2">
+                                            <Checkbox
+                                              id={`history-edit-${issue.id}`}
+                                              checked={selectedIssues.includes(issue.id)}
+                                              onCheckedChange={(checked) => {
+                                                if (checked) {
+                                                  setSelectedIssues([...selectedIssues, issue.id]);
+                                                } else {
+                                                  setSelectedIssues(selectedIssues.filter(id => id !== issue.id));
+                                                }
+                                              }}
+                                            />
+                                            <label
+                                              htmlFor={`history-edit-${issue.id}`}
+                                              className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70 cursor-pointer"
+                                            >
+                                              {issue.label}
+                                            </label>
+                                          </div>
+                                        ))}
+                                      </div>
+                                    </div>
                                   </div>
                                   
                                   <div className="flex gap-2">
@@ -389,6 +508,7 @@ const MoodTracking = () => {
                                         setEditingCheckin(null);
                                         setSelectedMood(null);
                                         setNotes("");
+                                        setSelectedIssues([]);
                                       }}
                                     >
                                       Cancel
