@@ -22,7 +22,7 @@ const StudentDetail = () => {
   const { toast } = useToast();
   
   const { students } = useStudents();
-  const { moodCheckins, getMoodTrendData } = useMoodCheckins(studentId);
+  const { moodCheckins, getMoodTrendData } = useMoodCheckins(studentId && studentId !== ':studentId' ? studentId : undefined);
   const { appointments } = useAppointments();
   const { 
     createRequest, 
