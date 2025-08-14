@@ -124,6 +124,17 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
               }
               
               setUser(newUser);
+              
+              // Handle role-based redirect after successful authentication
+              if (event === 'SIGNED_IN') {
+                setTimeout(() => {
+                  if (newUser.role === 'counselor') {
+                    navigate('/counselor/mood-insights');
+                  } else {
+                    navigate('/student');
+                  }
+                }, 100);
+              }
             } catch (error) {
               console.error('Error in auth state change:', error);
             } finally {
