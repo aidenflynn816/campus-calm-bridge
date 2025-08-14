@@ -37,6 +37,7 @@ interface AuthContextType {
   session: Session | null;
   isLoading: boolean;
   signIn: (email: string, password: string) => Promise<void>;
+  signInWithGoogle: () => Promise<void>;
   signUp: (email: string, password: string, role: 'student' | 'counselor', fullName: string) => Promise<void>;
   signOut: () => Promise<void>;
 }
@@ -193,6 +194,42 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     }
   };
 
+  // Sign in with Google function
+  const signInWithGoogle = async () => {
+    setIsLoading(true);
+    
+    try {
+      // Clean up any existing auth state first
+      cleanupAuthState();
+      
+      // Attempt global sign out first
+      try {
+        await supabase.auth.signOut({ scope: 'global' });
+      } catch (err) {
+        // Continue even if this fails
+      }
+
+      const { data, error } = await supabase.auth.signInWithOAuth({
+        provider: 'google',
+        options: {
+          redirectTo: `${window.location.origin}/`,
+        },
+      });
+
+      if (error) {
+        throw new Error(error.message);
+      }
+
+      // OAuth flow will handle the redirect automatically
+    } catch (error: any) {
+      console.error('Error signing in with Google:', error);
+      toast.error(error.message || 'Failed to sign in with Google');
+      throw error;
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
   // Sign up function
   const signUp = async (email: string, password: string, role: 'student' | 'counselor', fullName: string) => {
     setIsLoading(true);
@@ -281,6 +318,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     session,
     isLoading,
     signIn,
+    signInWithGoogle,
     signUp,
     signOut,
   };
