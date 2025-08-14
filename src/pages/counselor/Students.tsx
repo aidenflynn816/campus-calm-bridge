@@ -46,7 +46,7 @@ const StudentList = () => {
     const recentMood = studentMoods.sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime())[0];
     const upcomingAppointments = studentAppointments.filter(apt => {
       const aptDate = new Date(`${apt.date}T${apt.time}`);
-      return aptDate > new Date() && apt.status === 'confirmed';
+      return aptDate > new Date() && (apt.status === 'confirmed' || apt.status === 'pending');
     }).length;
     return {
       totalMoodCheckins: studentMoods.length,
@@ -56,9 +56,9 @@ const StudentList = () => {
     };
   };
   const getMoodColor = (rating: number) => {
-    if (rating >= 4) return "text-green-600 bg-green-50";
-    if (rating === 3) return "text-yellow-600 bg-yellow-50";
-    return "text-red-600 bg-red-50";
+    if (rating >= 4) return "text-emerald-600 bg-emerald-50 dark:text-emerald-400 dark:bg-emerald-950";
+    if (rating === 3) return "text-amber-600 bg-amber-50 dark:text-amber-400 dark:bg-amber-950";
+    return "text-red-600 bg-red-50 dark:text-red-400 dark:bg-red-950";
   };
   if (isLoading) {
     return <Layout>
@@ -156,7 +156,7 @@ const StudentList = () => {
                             {stats.recentMood.mood_emoji} {stats.recentMood.mood_rating}/5
                           </Badge>}
                         
-                        {stats.upcomingAppointments > 0 && <Badge variant="outline" className="text-blue-600 border-blue-200">
+                        {stats.upcomingAppointments > 0 && <Badge variant="outline" className="text-blue-600 border-blue-200 dark:text-blue-400 dark:border-blue-800">
                             <Calendar className="h-3 w-3 mr-1" />
                             {stats.upcomingAppointments} upcoming
                           </Badge>}
