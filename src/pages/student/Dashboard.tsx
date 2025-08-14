@@ -3,62 +3,49 @@ import { Link } from "react-router-dom";
 import Layout from "../../components/Layout";
 import { useAuth } from "../../contexts/AuthContext";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Calendar, MessageSquare, BookOpen, SmilePlus, TrendingUp } from "lucide-react";
+import { MessageSquare, BookOpen, SmilePlus, ArrowRight } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { useMoodCheckins, MOOD_OPTIONS } from "@/hooks/useMoodCheckins";
+import { useResources } from "@/hooks/useResources";
 import { DataSharingNotifications } from "../../components/DataSharingNotifications";
 import { format } from "date-fns";
+import { useQuery } from "@tanstack/react-query";
+import { supabase } from "@/integrations/supabase/client";
 
 const StudentDashboard = () => {
   const { user } = useAuth();
-  const { moodCheckins, todayCheckin, getMoodTrendData } = useMoodCheckins();
-  
-  // Mock data for dashboard
-  const upcomingAppointment = {
-    date: "2025-04-28",
-    time: "3:00 PM",
-    counselor: "Dr. Jamie Counselor",
-  };
-  
-  // Get recent mood history (last 7 days)
-  const recentMoodHistory = getMoodTrendData(7);
-  
-  // Calculate mood streak (consecutive days with check-ins)
-  const calculateMoodStreak = () => {
-    if (moodCheckins.length === 0) return 0;
-    
-    let streak = 0;
-    const today = new Date();
-    
-    for (let i = 0; i < 30; i++) { // Check last 30 days
-      const checkDate = new Date(today);
-      checkDate.setDate(today.getDate() - i);
-      
-      const hasCheckin = moodCheckins.some(checkin => {
-        const checkinDate = new Date(checkin.created_at);
-        return checkinDate.toDateString() === checkDate.toDateString();
-      });
-      
-      if (hasCheckin) {
-        streak++;
-      } else if (i > 0) { // Don't break on first day if no checkin today
-        break;
+  const { todayCheckin } = useMoodCheckins();
+  const { resources } = useResources();
+
+  // Fetch unread messages count
+  const { data: unreadCount = 0 } = useQuery({
+    queryKey: ['unread-messages-count'],
+    queryFn: async () => {
+      try {
+        const { data: user } = await supabase.auth.getUser();
+        if (!user.user) return 0;
+        
+        const { count, error } = await supabase
+          .from('messages')
+          .select('*', { count: 'exact', head: true })
+          .eq('recipient_id', user.user.id)
+          .is('read_at', null);
+          
+        if (error) throw error;
+        return count || 0;
+      } catch (error) {
+        console.error('Error fetching unread messages:', error);
+        return 0;
       }
     }
-    
-    return streak;
-  };
-  
-  const moodStreak = calculateMoodStreak();
-  const newMessages = 2;
-  
-  const recommendedResources = [
-    { id: 1, title: "Managing Exam Stress", category: "Stress" },
-    { id: 2, title: "Healthy Sleep Patterns", category: "Wellness" },
-    { id: 3, title: "Mindfulness Practices", category: "Mindfulness" },
-  ];
-  
+  });
+
+  // Get featured/recommended resources (limited to 3)
+  const recommendedResources = resources
+    .filter(resource => resource.featured)
+    .slice(0, 3);
+
   return (
     <Layout>
       <div className="mb-6">
@@ -67,7 +54,7 @@ const StudentDashboard = () => {
 
       <div className="mb-8">
         <h1 className="text-3xl font-bold text-bridge-primary">
-          Welcome, {user?.name?.split(" ")[0] || "Student"}
+          Welcome, {user?.full_name?.split(" ")[0] || "Student"}
         </h1>
         <p className="text-lg text-bridge-text/70 mt-1">
           How are you feeling today?
@@ -104,14 +91,10 @@ const StudentDashboard = () => {
                     </p>
                   </div>
                 </div>
-                {moodStreak > 1 && (
-                  <div className="flex items-center gap-2">
-                    <TrendingUp size={16} className="text-green-500" />
-                    <span className="text-sm text-green-600 font-medium">
-                      {moodStreak} day streak!
-                    </span>
-                  </div>
-                )}
+                <div className="bg-green-50 border border-green-200 rounded-lg p-3">
+                  <p className="text-sm text-green-700 font-medium">✅ Check-in completed!</p>
+                  <p className="text-xs text-green-600">Great job tracking your mood today.</p>
+                </div>
               </div>
             ) : (
               <div className="space-y-4">
@@ -134,123 +117,73 @@ const StudentDashboard = () => {
             )}
             <Button asChild className="bridge-button-primary w-full mt-4">
               <Link to="/student/mood">
-                {todayCheckin ? "View Details" : "Check In"}
+                {todayCheckin ? "View Details" : "Check In Now"}
               </Link>
             </Button>
           </CardContent>
         </Card>
         
-        {/* Upcoming Appointment */}
-        <Card className="bridge-card">
-          <CardHeader className="pb-2">
-            <CardTitle className="flex items-center space-x-2">
-              <Calendar className="h-5 w-5 text-bridge-primary" />
-              <span>Upcoming Appointment</span>
-            </CardTitle>
+        {/* Unread Messages */}
+        <Card className="bridge-card cursor-pointer hover:shadow-lg transition-shadow" onClick={() => window.location.href = '/student/messages'}>
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+            <CardTitle className="text-sm font-medium">Messages</CardTitle>
+            <MessageSquare className="h-4 w-4 text-blue-500" />
           </CardHeader>
           <CardContent>
-            {upcomingAppointment ? (
-              <div className="mb-4">
-                <p className="font-medium">{upcomingAppointment.date} at {upcomingAppointment.time}</p>
-                <p className="text-bridge-text/70">With {upcomingAppointment.counselor}</p>
-              </div>
-            ) : (
-              <p className="mb-4 text-bridge-text/70">No upcoming appointments</p>
-            )}
-            <Button asChild className="bridge-button-primary w-full">
-              <Link to="/student/book">Book Meeting</Link>
-            </Button>
-          </CardContent>
-        </Card>
-        
-        {/* Messages */}
-        <Card className="bridge-card">
-          <CardHeader className="pb-2">
-            <CardTitle className="flex items-center space-x-2">
-              <MessageSquare className="h-5 w-5 text-bridge-primary" />
-              <span>Messages</span>
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            {newMessages > 0 ? (
-              <p className="mb-4">You have <span className="font-medium">{newMessages} unread</span> messages</p>
-            ) : (
-              <p className="mb-4 text-bridge-text/70">No new messages</p>
-            )}
-            <Button asChild className="bridge-button-primary w-full">
-              <Link to="/student/messages">View Messages</Link>
-            </Button>
-          </CardContent>
-        </Card>
-        
-        {/* Mood History */}
-        <Card className="bridge-card md:col-span-2">
-          <CardHeader className="pb-2">
-            <CardTitle className="flex items-center justify-between">
-              <span>Recent Mood History</span>
-              {moodStreak > 0 && (
-                <Badge variant="secondary" className="bg-green-100 text-green-800">
-                  {moodStreak} day streak
-                </Badge>
-              )}
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            {recentMoodHistory.length > 0 ? (
-              <div className="flex justify-between items-center">
-                {recentMoodHistory.slice(-7).map((day, index) => {
-                  const moodOption = MOOD_OPTIONS.find(option => option.rating === day.mood);
-                  return (
-                    <div key={index} className="flex flex-col items-center">
-                      <div className={`p-2 rounded-lg ${moodOption?.bgColor}/10 border border-${moodOption?.color.replace('text-', '')}/20 mb-1`}>
-                        {moodOption && <moodOption.icon size={20} className={moodOption.color} />}
-                      </div>
-                      <div className="text-xs text-bridge-text/70">
-                        {new Date(day.date).toLocaleDateString(undefined, { weekday: 'short' })}
-                      </div>
-                    </div>
-                  );
-                 })}
-              </div>
-            ) : (
-              <div className="text-center py-4 text-bridge-text/60">
-                <p>No mood data yet</p>
-                <p className="text-sm">Start tracking your mood to see patterns!</p>
-              </div>
-            )}
-            <div className="mt-4">
-              <Button asChild variant="outline" className="w-full">
-                <Link to="/student/mood">View Full History</Link>
-              </Button>
+            <div className="text-2xl font-bold text-bridge-primary mb-2">
+              {unreadCount}
             </div>
+            {unreadCount > 0 ? (
+              <div className="flex items-center gap-2">
+                <Badge variant="destructive" className="text-xs">
+                  Unread
+                </Badge>
+                <ArrowRight className="h-4 w-4 text-bridge-text/70" />
+              </div>
+            ) : (
+              <p className="text-sm text-bridge-text/70">All caught up!</p>
+            )}
           </CardContent>
         </Card>
-        
-        {/* Resources */}
+
+        {/* Recommended Resources */}
         <Card className="bridge-card">
           <CardHeader className="pb-2">
             <CardTitle className="flex items-center space-x-2">
               <BookOpen className="h-5 w-5 text-bridge-primary" />
-              <span>Resources For You</span>
+              <span>Recommended Resources</span>
             </CardTitle>
           </CardHeader>
           <CardContent>
-            <ul className="space-y-3 mb-4">
-              {recommendedResources.map((resource) => (
-                <li key={resource.id}>
-                  <a href="#" className="group flex items-center space-x-3">
-                    <div className="w-10 h-10 rounded-lg bg-bridge-accent/20 flex items-center justify-center">
-                      <BookOpen size={18} className="text-bridge-primary" />
-                    </div>
-                    <div>
-                      <p className="font-medium group-hover:text-bridge-primary">{resource.title}</p>
-                      <p className="text-xs text-bridge-text/70">{resource.category}</p>
-                    </div>
-                  </a>
-                </li>
-              ))}
-            </ul>
-            <Button asChild className="w-full">
+            {recommendedResources.length > 0 ? (
+              <ul className="space-y-3 mb-4">
+                {recommendedResources.map((resource) => (
+                  <li key={resource.id}>
+                    <Link 
+                      to={`/student/resources`}
+                      className="group flex items-center space-x-3 hover:bg-bridge-accent/5 p-2 rounded-lg transition-colors"
+                    >
+                      <div className="w-10 h-10 rounded-lg bg-bridge-accent/20 flex items-center justify-center">
+                        <BookOpen size={18} className="text-bridge-primary" />
+                      </div>
+                      <div className="flex-1">
+                        <p className="font-medium group-hover:text-bridge-primary text-sm">
+                          {resource.title}
+                        </p>
+                        <p className="text-xs text-bridge-text/70">{resource.category}</p>
+                      </div>
+                      <ArrowRight className="h-4 w-4 text-bridge-text/40 group-hover:text-bridge-primary transition-colors" />
+                    </Link>
+                  </li>
+                ))}
+              </ul>
+            ) : (
+              <div className="text-center py-4 text-bridge-text/60">
+                <BookOpen className="h-8 w-8 mx-auto mb-2 text-bridge-text/40" />
+                <p className="text-sm">No resources available yet</p>
+              </div>
+            )}
+            <Button asChild className="w-full" variant="outline">
               <Link to="/student/resources">Browse All Resources</Link>
             </Button>
           </CardContent>
