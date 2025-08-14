@@ -1,238 +1,238 @@
 
-import { Link } from "react-router-dom";
+import { useState, useEffect } from "react";
+import { useNavigate } from "react-router-dom";
 import Layout from "../../components/Layout";
-import { useAuth } from "../../contexts/AuthContext";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Calendar, MessageSquare, Users, BarChart } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { CalendlyUrlManager } from "@/components/CalendlyUrlManager";
+import { Badge } from "@/components/ui/badge";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
+import { MessageSquare, TrendingUp, BookOpen, AlertCircle, ArrowRight } from "lucide-react";
+import { useAuth } from "../../contexts/AuthContext";
+import { useCounselorMoodData } from "@/hooks/useCounselorMoodData";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 
 const CounselorDashboard = () => {
+  const navigate = useNavigate();
   const { user } = useAuth();
-  
-  // Fetch counselor profile data including Calendly URL
-  const { data: profile } = useQuery({
-    queryKey: ['profile', user?.id],
+  const [showResourcesGuide, setShowResourcesGuide] = useState(false);
+
+  // Get mood data for top issue analysis
+  const { getOverviewMetrics } = useCounselorMoodData(1); // Today only
+  const metrics = getOverviewMetrics();
+
+  // Fetch unread messages count
+  const { data: unreadCount = 0 } = useQuery({
+    queryKey: ['unread-messages-count'],
     queryFn: async () => {
-      if (!user?.id) return null;
-      
-      const { data, error } = await supabase
-        .from('profiles')
-        .select('calendly_url')
-        .eq('user_id', user.id)
-        .maybeSingle();
-      
-      if (error) throw error;
-      return data;
+      try {
+        const { data: user } = await supabase.auth.getUser();
+        if (!user.user) return 0;
+
+        const { count, error } = await supabase
+          .from('messages')
+          .select('*', { count: 'exact', head: true })
+          .eq('recipient_id', user.user.id)
+          .is('read_at', null);
+
+        if (error) throw error;
+        return count || 0;
+      } catch (error) {
+        console.error('Error fetching unread messages:', error);
+        return 0;
+      }
     },
-    enabled: !!user?.id,
   });
-  
-  // Mock data for dashboard
-  const upcomingAppointments = [
-    { id: 1, date: "2025-04-25", time: "2:00 PM", student: "Alex Student" },
-    { id: 2, date: "2025-04-25", time: "3:30 PM", student: "Taylor Johnson" },
-  ];
-  
-  const pendingRequests = 2;
-  const newMessages = 3;
-  
-  const studentConcerns = [
-    { category: "Anxiety", count: 7 },
-    { category: "Sleep Issues", count: 5 },
-    { category: "Academic Pressure", count: 9 },
-    { category: "Social Relationships", count: 4 },
-  ];
-  
-  const recentMoodData = [
-    { mood: "happy", percentage: 65 },
-    { mood: "neutral", percentage: 25 },
-    { mood: "sad", percentage: 10 },
-  ];
-  
+
   return (
     <Layout>
-      <div className="mb-8">
-        <h1 className="text-3xl font-bold text-bridge-primary">
-          Welcome, {user?.name?.split(" ")[0] || "Counselor"}
-        </h1>
-        <p className="text-lg text-bridge-text/70 mt-1">
-          Here's an overview of your dashboard
-        </p>
-      </div>
-      
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-        {/* Calendly URL Manager */}
-        <Card className="bridge-card md:col-span-2 lg:col-span-3">
-          <CalendlyUrlManager currentUrl={profile?.calendly_url} />
-        </Card>
-        
-        {/* Today's Appointments */}
-        <Card className="bridge-card">
-          <CardHeader className="pb-2">
-            <CardTitle className="flex items-center space-x-2">
-              <Calendar className="h-5 w-5 text-bridge-primary" />
-              <span>Today's Schedule</span>
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            {upcomingAppointments.length > 0 ? (
-              <div className="space-y-3 mb-4">
-                {upcomingAppointments.map((appointment) => (
-                  <div key={appointment.id} className="flex items-center justify-between">
-                    <div>
-                      <p className="font-medium">{appointment.time}</p>
-                      <p className="text-sm text-bridge-text/70">{appointment.student}</p>
-                    </div>
-                    <Button size="sm" variant="outline">View</Button>
-                  </div>
-                ))}
+      <div className="space-y-6">
+        {/* Header */}
+        <div className="mb-6">
+          <h1 className="text-3xl font-bold text-bridge-primary">Counselor Dashboard</h1>
+          <p className="text-lg text-bridge-text/70 mt-1">
+            Welcome back, {user?.full_name || 'Counselor'}
+          </p>
+        </div>
+
+        {/* Main Dashboard Cards */}
+        <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
+          {/* Unread Messages Card */}
+          <Card 
+            className="bridge-card cursor-pointer hover:shadow-lg transition-shadow"
+            onClick={() => navigate('/counselor/messages')}
+          >
+            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+              <CardTitle className="text-sm font-medium">Unread Messages</CardTitle>
+              <MessageSquare className="h-4 w-4 text-blue-500" />
+            </CardHeader>
+            <CardContent>
+              <div className="text-2xl font-bold text-bridge-primary mb-2">
+                {unreadCount}
               </div>
-            ) : (
-              <p className="mb-4 text-bridge-text/70">No appointments scheduled for today</p>
-            )}
-            <p className="text-sm text-bridge-text/60">
-              Appointments are now managed through Calendly
-            </p>
-          </CardContent>
-        </Card>
-        
-        {/* Pending Requests */}
-        <Card className="bridge-card">
-          <CardHeader className="pb-2">
-            <CardTitle className="flex items-center space-x-2">
-              <Calendar className="h-5 w-5 text-bridge-primary" />
-              <span>Booking Requests</span>
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            {pendingRequests > 0 ? (
-              <p className="mb-4">You have <span className="font-medium">{pendingRequests} pending</span> appointment requests</p>
-            ) : (
-              <p className="mb-4 text-bridge-text/70">No pending requests</p>
-            )}
-            <p className="text-sm text-bridge-text/60">
-              Booking requests are now handled through Calendly
-            </p>
-          </CardContent>
-        </Card>
-        
-        {/* Messages */}
-        <Card className="bridge-card">
-          <CardHeader className="pb-2">
-            <CardTitle className="flex items-center space-x-2">
-              <MessageSquare className="h-5 w-5 text-bridge-primary" />
-              <span>Messages</span>
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            {newMessages > 0 ? (
-              <p className="mb-4">You have <span className="font-medium">{newMessages} unread</span> messages from students</p>
-            ) : (
-              <p className="mb-4 text-bridge-text/70">No new messages</p>
-            )}
-            <Button asChild className="bridge-button-primary w-full">
-              <Link to="/counselor/messages">View Messages</Link>
-            </Button>
-          </CardContent>
-        </Card>
-        
-        {/* Student Concerns */}
-        <Card className="bridge-card md:col-span-2">
-          <CardHeader className="pb-2">
-            <CardTitle>Top Student Concerns</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="space-y-4">
-              {studentConcerns.map((concern) => (
-                <div key={concern.category}>
-                  <div className="flex justify-between mb-1">
-                    <span>{concern.category}</span>
-                    <span className="text-bridge-text/70">{concern.count} students</span>
+              {unreadCount > 0 ? (
+                <div className="flex items-center gap-2">
+                  <Badge variant="destructive" className="text-xs">
+                    Needs Attention
+                  </Badge>
+                  <ArrowRight className="h-4 w-4 text-bridge-text/70" />
+                </div>
+              ) : (
+                <p className="text-sm text-bridge-text/70">All caught up!</p>
+              )}
+            </CardContent>
+          </Card>
+
+          {/* Top Issue of the Day Card */}
+          <Card 
+            className="bridge-card cursor-pointer hover:shadow-lg transition-shadow"
+            onClick={() => navigate('/counselor/mood-insights')}
+          >
+            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+              <CardTitle className="text-sm font-medium">Top Issue Today</CardTitle>
+              <TrendingUp className="h-4 w-4 text-orange-500" />
+            </CardHeader>
+            <CardContent>
+              <div className="text-lg font-bold text-bridge-primary mb-2">
+                {metrics.mostCommonIssueToday || 'No issues reported'}
+              </div>
+              {metrics.mostCommonIssueToday && metrics.mostCommonIssueToday !== 'None' ? (
+                <div className="flex items-center gap-2">
+                  <Badge variant="secondary" className="text-xs">
+                    Trending
+                  </Badge>
+                  <ArrowRight className="h-4 w-4 text-bridge-text/70" />
+                </div>
+              ) : (
+                <p className="text-sm text-bridge-text/70">Great day so far!</p>
+              )}
+            </CardContent>
+          </Card>
+
+          {/* Resources Guide Card */}
+          <Dialog open={showResourcesGuide} onOpenChange={setShowResourcesGuide}>
+            <DialogTrigger asChild>
+              <Card className="bridge-card cursor-pointer hover:shadow-lg transition-shadow">
+                <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                  <CardTitle className="text-sm font-medium">Resource Center</CardTitle>
+                  <BookOpen className="h-4 w-4 text-green-500" />
+                </CardHeader>
+                <CardContent>
+                  <div className="text-lg font-bold text-bridge-primary mb-2">
+                    Quick Access
                   </div>
-                  <div className="w-full bg-bridge-muted/30 rounded-full h-2.5">
-                    <div 
-                      className="bg-bridge-primary h-2.5 rounded-full" 
-                      style={{ width: `${(concern.count / 10) * 100}%` }} 
-                    ></div>
+                  <div className="flex items-center gap-2">
+                    <Badge variant="outline" className="text-xs">
+                      Click to Learn More
+                    </Badge>
+                    <ArrowRight className="h-4 w-4 text-bridge-text/70" />
+                  </div>
+                </CardContent>
+              </Card>
+            </DialogTrigger>
+            
+            <DialogContent>
+              <DialogHeader>
+                <DialogTitle className="flex items-center gap-2">
+                  <BookOpen className="h-5 w-5 text-green-500" />
+                  Resource Center Guide
+                </DialogTitle>
+              </DialogHeader>
+              
+              <div className="space-y-4">
+                <div className="flex items-start gap-3">
+                  <AlertCircle className="h-5 w-5 text-blue-500 mt-1" />
+                  <div>
+                    <h3 className="font-semibold text-bridge-primary">Access Educational Materials</h3>
+                    <p className="text-sm text-bridge-text/80">
+                      Browse through curated resources, articles, and educational content to help your students.
+                    </p>
                   </div>
                 </div>
-              ))}
-            </div>
-          </CardContent>
-        </Card>
-        
-        {/* Student Mood Overview */}
-        <Card className="bridge-card">
-          <CardHeader className="pb-2">
-            <CardTitle className="flex items-center space-x-2">
-              <BarChart className="h-5 w-5 text-bridge-primary" />
-              <span>Student Mood</span>
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="space-y-3 mb-4">
-              {recentMoodData.map((item) => (
-                <div key={item.mood}>
-                  <div className="flex justify-between items-center mb-1">
-                    <span className="flex items-center">
-                      <span className="mr-2">
-                        {item.mood === "happy" ? "😊" : item.mood === "neutral" ? "😐" : "😔"}
-                      </span>
-                      {item.mood.charAt(0).toUpperCase() + item.mood.slice(1)}
-                    </span>
-                    <span className="text-bridge-text/70">{item.percentage}%</span>
-                  </div>
-                  <div className="w-full bg-bridge-muted/30 rounded-full h-2">
-                    <div 
-                      className={`h-2 rounded-full ${
-                        item.mood === "happy" ? "bg-green-500" : 
-                        item.mood === "neutral" ? "bg-yellow-500" : "bg-red-500"
-                      }`} 
-                      style={{ width: `${item.percentage}%` }} 
-                    ></div>
+                
+                <div className="flex items-start gap-3">
+                  <AlertCircle className="h-5 w-5 text-purple-500 mt-1" />
+                  <div>
+                    <h3 className="font-semibold text-bridge-primary">Create & Share Content</h3>
+                    <p className="text-sm text-bridge-text/80">
+                      Upload new resources, create custom content, and organize materials by category.
+                    </p>
                   </div>
                 </div>
-              ))}
-            </div>
-            <Button asChild className="w-full">
-              <Link to="/counselor/mood-insights">View Detailed Insights</Link>
-            </Button>
-          </CardContent>
-        </Card>
-        
-        {/* Students Overview */}
-        <Card className="bridge-card md:col-span-3">
-          <CardHeader className="pb-2">
-            <CardTitle className="flex items-center space-x-2">
-              <Users className="h-5 w-5 text-bridge-primary" />
-              <span>Students Overview</span>
-            </CardTitle>
+                
+                <div className="flex items-start gap-3">
+                  <AlertCircle className="h-5 w-5 text-orange-500 mt-1" />
+                  <div>
+                    <h3 className="font-semibold text-bridge-primary">Track Engagement</h3>
+                    <p className="text-sm text-bridge-text/80">
+                      Monitor which resources are most helpful and frequently accessed by students.
+                    </p>
+                  </div>
+                </div>
+                
+                <div className="flex gap-3 pt-4">
+                  <Button 
+                    onClick={() => {
+                      navigate('/counselor/resources');
+                      setShowResourcesGuide(false);
+                    }}
+                    className="flex-1"
+                  >
+                    Go to Resources
+                  </Button>
+                  <Button 
+                    variant="outline" 
+                    onClick={() => setShowResourcesGuide(false)}
+                  >
+                    Close
+                  </Button>
+                </div>
+              </div>
+            </DialogContent>
+          </Dialog>
+        </div>
+
+        {/* Quick Navigation */}
+        <Card className="bridge-card">
+          <CardHeader>
+            <CardTitle>Quick Navigation</CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
-              <div className="p-4 rounded-2xl bg-bridge-muted/30">
-                <p className="text-3xl font-bold text-bridge-primary">24</p>
-                <p className="text-sm text-bridge-text/70">Total Students</p>
-              </div>
-              <div className="p-4 rounded-2xl bg-bridge-muted/30">
-                <p className="text-3xl font-bold text-bridge-primary">12</p>
-                <p className="text-sm text-bridge-text/70">Recent Check-ins</p>
-              </div>
-              <div className="p-4 rounded-2xl bg-bridge-muted/30">
-                <p className="text-3xl font-bold text-bridge-primary">8</p>
-                <p className="text-sm text-bridge-text/70">Appointments This Week</p>
-              </div>
-              <div className="p-4 rounded-2xl bg-bridge-muted/30">
-                <p className="text-3xl font-bold text-bridge-primary">18</p>
-                <p className="text-sm text-bridge-text/70">Active Conversations</p>
-              </div>
-            </div>
-            <div className="mt-4">
-              <Button asChild className="bridge-button-primary">
-                <Link to="/counselor/students">View All Students</Link>
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+              <Button 
+                variant="outline" 
+                className="h-20 flex flex-col gap-2"
+                onClick={() => navigate('/counselor/students')}
+              >
+                <MessageSquare className="h-6 w-6" />
+                <span className="text-sm">Students</span>
+              </Button>
+              
+              <Button 
+                variant="outline" 
+                className="h-20 flex flex-col gap-2"
+                onClick={() => navigate('/counselor/mood-insights')}
+              >
+                <TrendingUp className="h-6 w-6" />
+                <span className="text-sm">Mood Insights</span>
+              </Button>
+              
+              <Button 
+                variant="outline" 
+                className="h-20 flex flex-col gap-2"
+                onClick={() => navigate('/counselor/messages')}
+              >
+                <MessageSquare className="h-6 w-6" />
+                <span className="text-sm">Messages</span>
+              </Button>
+              
+              <Button 
+                variant="outline" 
+                className="h-20 flex flex-col gap-2"
+                onClick={() => navigate('/counselor/resources')}
+              >
+                <BookOpen className="h-6 w-6" />
+                <span className="text-sm">Resources</span>
               </Button>
             </div>
           </CardContent>
