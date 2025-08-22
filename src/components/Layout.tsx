@@ -171,7 +171,7 @@ const Layout = ({ children }: LayoutProps) => {
             alt="Bridge Logo" 
             className="w-10 h-10"
           />
-          <h1 className="text-xl font-medium text-bridge-primary">Bridge</h1>
+          <h1 className="text-xl font-medium text-bridge-primary">Bridge | Groton</h1>
         </div>
         
         <nav className="flex-1 p-4 overflow-y-auto">
