@@ -30,9 +30,9 @@ const Index = () => {
             className="mb-6"
           >
             <img 
-              src="/lovable-uploads/ca0b6e19-c587-4ef5-9c6e-a46c2594cffc.png" 
-              alt="Bridge Logo" 
-              className="w-20 h-20"
+              src="/lovable-uploads/c07e7cef-cb7e-48d7-a0eb-c68a0c5f5175.png" 
+              alt="Groton School Crest" 
+              className="w-24 h-24"
             />
           </motion.div>
           
@@ -42,7 +42,7 @@ const Index = () => {
             transition={{ duration: 0.6, delay: 0.2 }}
             className="text-4xl md:text-6xl font-bold text-bridge-primary mb-4"
           >
-            Welcome to Bridge
+            Groton Counseling Center
           </motion.h1>
           
           <motion.p 
@@ -51,7 +51,7 @@ const Index = () => {
             transition={{ duration: 0.6, delay: 0.4 }}
             className="text-xl md:text-2xl text-bridge-text/80 max-w-2xl mb-8"
           >
-            Your connection to mental wellness support and resources
+            Supporting Groton students' mental health and wellness journey
           </motion.p>
           
           <motion.div 
@@ -93,24 +93,24 @@ const Index = () => {
             <div className="w-12 h-12 bg-bridge-accent/30 rounded-2xl flex items-center justify-center mb-4">
               <Clock className="text-bridge-primary" size={24} />
             </div>
-            <h3 className="text-xl font-semibold text-bridge-primary mb-2">Easy Scheduling</h3>
-            <p className="text-bridge-text/70">Book appointments with counselors that fit your schedule</p>
+            <h3 className="text-xl font-semibold text-bridge-primary mb-2">Flexible Scheduling</h3>
+            <p className="text-bridge-text/70">Book counseling appointments around your academic schedule</p>
           </div>
           
           <div className="bg-white rounded-3xl p-6 shadow-soft border border-bridge-muted/30 hover:shadow-medium transition-shadow">
             <div className="w-12 h-12 bg-bridge-accent/30 rounded-2xl flex items-center justify-center mb-4">
               <MessageCircle className="text-bridge-primary" size={24} />
             </div>
-            <h3 className="text-xl font-semibold text-bridge-primary mb-2">Secure Messaging</h3>
-            <p className="text-bridge-text/70">Private communication with your support team</p>
+            <h3 className="text-xl font-semibold text-bridge-primary mb-2">Confidential Support</h3>
+            <p className="text-bridge-text/70">Private, secure communication with your counselor</p>
           </div>
           
           <div className="bg-white rounded-3xl p-6 shadow-soft border border-bridge-muted/30 hover:shadow-medium transition-shadow">
             <div className="w-12 h-12 bg-bridge-accent/30 rounded-2xl flex items-center justify-center mb-4">
               <BookOpen className="text-bridge-primary" size={24} />
             </div>
-            <h3 className="text-xl font-semibold text-bridge-primary mb-2">Wellness Resources</h3>
-            <p className="text-bridge-text/70">Access helpful materials for your mental wellbeing</p>
+            <h3 className="text-xl font-semibold text-bridge-primary mb-2">Student Resources</h3>
+            <p className="text-bridge-text/70">Tailored wellness resources for boarding school life</p>
           </div>
         </motion.div>
       </div>
@@ -122,7 +122,7 @@ const Index = () => {
         transition={{ duration: 0.6, delay: 1 }}
         className="py-8 text-center text-bridge-text/50 text-sm"
       >
-        <p>&copy; {new Date().getFullYear()} Bridge | Mental Health Support Platform</p>
+        <p>&copy; {new Date().getFullYear()} Groton Counseling Center | Supporting Student Wellness</p>
       </motion.footer>
     </div>
   );

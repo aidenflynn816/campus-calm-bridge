@@ -101,11 +101,11 @@ const Layout = ({ children }: LayoutProps) => {
             >
               <div className="p-5 flex items-center space-x-3 border-b border-bridge-muted/30">
                 <img 
-                  src="/lovable-uploads/ca0b6e19-c587-4ef5-9c6e-a46c2594cffc.png" 
-                  alt="Bridge Logo" 
+                  src="/lovable-uploads/c07e7cef-cb7e-48d7-a0eb-c68a0c5f5175.png" 
+                  alt="Groton School Crest" 
                   className="w-10 h-10"
                 />
-                <h1 className="text-xl font-medium text-bridge-primary">Bridge</h1>
+                <h1 className="text-lg font-medium text-bridge-primary">Counseling Center</h1>
                 
                 <button 
                   onClick={() => setSidebarOpen(false)}
@@ -167,11 +167,11 @@ const Layout = ({ children }: LayoutProps) => {
       <div className="hidden md:flex md:w-64 lg:w-72 bg-white border-r border-bridge-muted/30 flex-col shadow-sm">
         <div className="p-6 flex items-center space-x-3 border-b border-bridge-muted/30">
           <img 
-            src="/lovable-uploads/ca0b6e19-c587-4ef5-9c6e-a46c2594cffc.png" 
-            alt="Bridge Logo" 
+            src="/lovable-uploads/c07e7cef-cb7e-48d7-a0eb-c68a0c5f5175.png" 
+            alt="Groton School Crest" 
             className="w-10 h-10"
           />
-          <h1 className="text-xl font-medium text-bridge-primary">Bridge</h1>
+          <h1 className="text-lg font-medium text-bridge-primary">Counseling Center</h1>
         </div>
         
         <nav className="flex-1 p-4 overflow-y-auto">
@@ -237,11 +237,11 @@ const Layout = ({ children }: LayoutProps) => {
             
             <div className="flex items-center space-x-3">
               <img 
-                src="/lovable-uploads/ca0b6e19-c587-4ef5-9c6e-a46c2594cffc.png" 
-                alt="Bridge Logo" 
+                src="/lovable-uploads/c07e7cef-cb7e-48d7-a0eb-c68a0c5f5175.png" 
+                alt="Groton School Crest" 
                 className="w-8 h-8"
               />
-              <h1 className="text-lg font-medium text-bridge-primary">Bridge</h1>
+              <h1 className="text-base font-medium text-bridge-primary">Counseling</h1>
             </div>
             
             <DropdownMenu>
