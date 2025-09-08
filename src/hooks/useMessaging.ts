@@ -88,12 +88,21 @@ export const useMessaging = (recipientId: string) => {
       
       return { success: true };
     },
-    onSuccess: () => {
+    onSuccess: async () => {
       queryClient.invalidateQueries({ queryKey: ['messages', currentUserId, recipientId] });
       toast({
         title: "Message sent",
         description: "Your message has been sent successfully."
       });
+
+      // Fire-and-forget: invoke the email notification edge function
+      try {
+        await supabase.functions.invoke('send-message-notification', {
+          body: { sender_id: currentUserId!, recipient_id: recipientId }
+        });
+      } catch (err) {
+        console.error('Failed to invoke send-message-notification:', err);
+      }
     },
     onError: (error: Error) => {
       console.error('Error sending message:', error);
