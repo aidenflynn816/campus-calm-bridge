@@ -71,6 +71,12 @@ serve(async (req) => {
         <p>You received a new message from <strong>${senderName}</strong> in Bridge.</p>
         <p>For your privacy, we don't include message content in email.</p>
         <p style="margin-top: 16px;">Please open the Bridge app to read and reply.</p>
+        <p>
+          <a href="https://bridgewellness.app" target="_blank" rel="noopener noreferrer"
+             style="display:inline-block;padding:10px 16px;background:#0ea5e9;color:#fff;text-decoration:none;border-radius:6px;margin-top:8px;">
+            Open Bridge
+          </a>
+        </p>
         <p style="font-size: 12px; color: #666; margin-top: 24px;">If you weren't expecting this, you can ignore this email.</p>
       </div>
     `;
