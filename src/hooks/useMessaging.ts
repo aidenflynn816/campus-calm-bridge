@@ -141,6 +141,8 @@ export const useMessaging = (recipientId: string) => {
   useEffect(() => {
     if (!currentUserId || !recipientId) return;
     
+    console.log('Setting up realtime subscriptions for:', { currentUserId, recipientId });
+    
     const messagesChannel = supabase
       .channel(`messages-${currentUserId}-${recipientId}`)
       .on('postgres_changes', { 
@@ -149,6 +151,7 @@ export const useMessaging = (recipientId: string) => {
         table: 'messages',
         filter: `or(and(sender_id.eq.${currentUserId},recipient_id.eq.${recipientId}),and(sender_id.eq.${recipientId},recipient_id.eq.${currentUserId}))`
       }, (payload) => {
+        console.log('Received new message:', payload);
         if (payload.new) {
           const newMessage = payload.new as Message;
           
@@ -209,6 +212,7 @@ export const useMessaging = (recipientId: string) => {
         table: 'typing_status',
         filter: `and(user_id.eq.${recipientId},chat_with_user_id.eq.${currentUserId})`
       }, (payload) => {
+        console.log('Received typing status update:', payload);
         if (payload.new) {
           const typingStatus = payload.new as any;
           setIsTyping(!!typingStatus.is_typing);
