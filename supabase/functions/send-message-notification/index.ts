@@ -63,21 +63,35 @@ serve(async (req) => {
 
     const recipientEmail = recipientUserData.user.email as string;
 
-    // Queue notification for batching instead of sending immediately
-    const { error: insertError } = await supabaseAdmin
-      .from("email_notifications")
-      .insert({
-        recipient_id,
-        recipient_email,
-        sender_name: senderName,
-        thread_key: `${Math.min(sender_id, recipient_id)}-${Math.max(sender_id, recipient_id)}`,
-        type: 'message'
-      });
+    // Send privacy-safe email (no message content)
+    const subject = `New message from ${senderName} - Bridge`;
+    const html = `
+      <div style="font-family: Arial, sans-serif; line-height: 1.6; color: #222">
+        <h2 style="margin: 0 0 12px;">You have a new message</h2>
+        <p>You received a new message from <strong>${senderName}</strong> in Bridge.</p>
+        <p>For your privacy, we don't include message content in email.</p>
+        <p style="margin-top: 16px;">Please open the Bridge app to read and reply.</p>
+        <p>
+          <a href="https://bridgewellness.app" target="_blank" rel="noopener noreferrer"
+             style="display:inline-block;padding:10px 16px;background:#0ea5e9;color:#fff;text-decoration:none;border-radius:6px;margin-top:8px;">
+            Open Bridge
+          </a>
+        </p>
+        <p style="font-size: 12px; color: #666; margin-top: 24px;">If you weren't expecting this, you can ignore this email.</p>
+      </div>
+    `;
 
-    if (insertError) {
-      console.error("Error queuing email notification:", insertError);
+    const { error: emailError } = await resend.emails.send({
+      from: "Bridge <notifications@bridgewellness.app>",
+      to: [recipientEmail],
+      subject,
+      html,
+    });
+
+    if (emailError) {
+      console.error("Error sending email via Resend:", emailError);
       return new Response(
-        JSON.stringify({ error: "Failed to queue notification" }),
+        JSON.stringify({ error: "Failed to send email" }),
         { status: 500, headers: { "Content-Type": "application/json", ...corsHeaders } }
       );
     }

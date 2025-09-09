@@ -89,7 +89,7 @@ export const useMessaging = (recipientId: string) => {
       return { success: true };
     },
     onSuccess: async () => {
-      // Don't invalidate queries - real-time listener handles optimistic updates
+      queryClient.invalidateQueries({ queryKey: ['messages', currentUserId, recipientId] });
       toast({
         title: "Message sent",
         description: "Your message has been sent successfully."
@@ -137,101 +137,57 @@ export const useMessaging = (recipientId: string) => {
     }
   };
 
-  // Listen for real-time messages and typing status
+  // Listen for new messages (real-time)
   useEffect(() => {
     if (!currentUserId || !recipientId) return;
     
-    console.log('Setting up realtime subscriptions for:', { currentUserId, recipientId });
-    
-    const messagesChannel = supabase
-      .channel(`messages-${currentUserId}-${recipientId}`)
+    const channel = supabase
+      .channel('realtime-messages')
       .on('postgres_changes', { 
         event: 'INSERT', 
         schema: 'public',
         table: 'messages',
-        filter: `or(and(sender_id.eq.${currentUserId},recipient_id.eq.${recipientId}),and(sender_id.eq.${recipientId},recipient_id.eq.${currentUserId}))`
+        filter: `recipient_id=eq.${currentUserId}`
       }, (payload) => {
-        console.log('Received new message:', payload);
-        if (payload.new) {
-          const newMessage = payload.new as Message;
+        if (payload.new && payload.new.sender_id === recipientId) {
+          queryClient.invalidateQueries({ queryKey: ['messages', currentUserId, recipientId] });
           
-          // Optimistically update the query cache instead of invalidating
-          queryClient.setQueryData(['messages', currentUserId, recipientId], (oldMessages: Message[] = []) => {
-            // Avoid duplicates
-            if (oldMessages.some(msg => msg.id === newMessage.id)) {
-              return oldMessages;
-            }
-            return [...oldMessages, newMessage].sort((a, b) => 
-              new Date(a.created_at).getTime() - new Date(b.created_at).getTime()
-            );
-          });
-          
-          // Auto-mark as read if we're the recipient
-          if (newMessage.recipient_id === currentUserId && !newMessage.read_at) {
-            supabase
-              .from('messages')
-              .update({ read_at: new Date().toISOString() })
-              .eq('id', newMessage.id)
-              .then(() => {
-                // Update the message in cache to show it's read
-                queryClient.setQueryData(['messages', currentUserId, recipientId], (oldMessages: Message[] = []) =>
-                  oldMessages.map(msg => 
-                    msg.id === newMessage.id 
-                      ? { ...msg, read_at: new Date().toISOString() }
-                      : msg
-                  )
-                );
-              });
-          }
-        }
-      })
-      .on('postgres_changes', {
-        event: 'UPDATE',
-        schema: 'public', 
-        table: 'messages',
-        filter: `or(and(sender_id.eq.${currentUserId},recipient_id.eq.${recipientId}),and(sender_id.eq.${recipientId},recipient_id.eq.${currentUserId}))`
-      }, (payload) => {
-        if (payload.new) {
-          const updatedMessage = payload.new as Message;
-          
-          // Update message in cache (for read status changes)
-          queryClient.setQueryData(['messages', currentUserId, recipientId], (oldMessages: Message[] = []) =>
-            oldMessages.map(msg => 
-              msg.id === updatedMessage.id ? updatedMessage : msg
-            )
-          );
-        }
-      })
-      .subscribe();
-
-    const typingChannel = supabase
-      .channel(`typing-${currentUserId}-${recipientId}`)
-      .on('postgres_changes', {
-        event: '*',
-        schema: 'public',
-        table: 'typing_status',
-        filter: `and(user_id.eq.${recipientId},chat_with_user_id.eq.${currentUserId})`
-      }, (payload) => {
-        console.log('Received typing status update:', payload);
-        if (payload.new) {
-          const typingStatus = payload.new as any;
-          setIsTyping(!!typingStatus.is_typing);
-          
-          // Auto-clear typing status after 3 seconds of no updates
-          if (typingStatus.is_typing) {
-            setTimeout(() => {
-              setIsTyping(false);
-            }, 3000);
-          }
+          // Mark message as read immediately if we're in this chat
+          supabase
+            .from('messages')
+            .update({ read_at: new Date().toISOString() })
+            .eq('id', payload.new.id);
         }
       })
       .subscribe();
 
     return () => {
-      supabase.removeChannel(messagesChannel);
-      supabase.removeChannel(typingChannel);
+      supabase.removeChannel(channel);
     };
   }, [recipientId, currentUserId, queryClient]);
+
+  // Listen for typing status changes
+  useEffect(() => {
+    if (!currentUserId || !recipientId) return;
+    
+    const channel = supabase
+      .channel('realtime-typing')
+      .on('postgres_changes', {
+        event: 'UPDATE',
+        schema: 'public',
+        table: 'typing_status',
+        filter: `user_id=eq.${recipientId}`
+      }, (payload) => {
+        if (payload.new && payload.new.chat_with_user_id === currentUserId) {
+          setIsTyping(!!payload.new.is_typing);
+        }
+      })
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(channel);
+    };
+  }, [recipientId, currentUserId]);
 
   return {
     messages,
