@@ -46,7 +46,7 @@ serve(async (req) => {
       console.error("Error fetching sender profile:", senderProfileError);
     }
 
-    const senderName = senderProfile?.full_name || "Bridge | Groton user";
+    const senderName = senderProfile?.full_name || "Bridge user";
 
     // Fetch recipient email from Auth
     const { data: recipientUserData, error: recipientUserError } = await supabaseAdmin.auth.admin.getUserById(
@@ -64,19 +64,19 @@ serve(async (req) => {
     const recipientEmail = recipientUserData.user.email as string;
 
     // Send privacy-safe email (no message content)
-    const subject = `New message from ${senderName} - Bridge | Groton`;
+    const subject = `New message from ${senderName} - Bridge`;
     const html = `
       <div style="font-family: Arial, sans-serif; line-height: 1.6; color: #222">
         <h2 style="margin: 0 0 12px;">You have a new message</h2>
-        <p>You received a new message from <strong>${senderName}</strong> in Bridge | Groton.</p>
+        <p>You received a new message from <strong>${senderName}</strong> in Bridge.</p>
         <p>For your privacy, we don't include message content in email.</p>
-        <p style="margin-top: 16px;">Please open the Bridge | Groton app to read and reply.</p>
+        <p style="margin-top: 16px;">Please open the Bridge app to read and reply.</p>
         <p style="font-size: 12px; color: #666; margin-top: 24px;">If you weren't expecting this, you can ignore this email.</p>
       </div>
     `;
 
     const { error: emailError } = await resend.emails.send({
-      from: "Bridge | Groton <notifications@resend.dev>",
+      from: "Bridge <notifications@bridgewellness.app>",
       to: [recipientEmail],
       subject,
       html,
