@@ -6,6 +6,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Badge } from "@/components/ui/badge";
 import { useCounselorMoodData } from "@/hooks/useCounselorMoodData";
+import { useCounselorStudents } from "@/hooks/useCounselorStudents";
 import MoodOverviewMetrics from "@/components/counselor/MoodOverviewMetrics";
 import MoodTrendChart from "@/components/counselor/MoodTrendChart";
 import IssuesFrequencyChart from "@/components/counselor/IssuesFrequencyChart";
@@ -15,6 +16,7 @@ import { BarChart3, TrendingUp, Calendar, Table, AlertCircle } from "lucide-reac
 const MoodInsights = () => {
   const [dateRange, setDateRange] = useState(30);
   const [selectedGroup, setSelectedGroup] = useState("all");
+  const { manuallyAssignedStudents } = useCounselorStudents();
   const {
     moodData,
     isLoading,
@@ -23,7 +25,7 @@ const MoodInsights = () => {
     getIssueFrequencyData,
     getCalendarHeatmapData,
     getMoodByIssueData
-  } = useCounselorMoodData(dateRange);
+  } = useCounselorMoodData(dateRange, selectedGroup, manuallyAssignedStudents);
   const overviewMetrics = getOverviewMetrics();
   const trendData = getMoodTrendData(dateRange);
   const issuesFrequencyData = getIssueFrequencyData();
@@ -62,8 +64,7 @@ const MoodInsights = () => {
               </SelectTrigger>
               <SelectContent>
                 <SelectItem value="all">All Students</SelectItem>
-                <SelectItem value="group-a">Group A</SelectItem>
-                <SelectItem value="group-b">Group B</SelectItem>
+                <SelectItem value="my-students">My Students</SelectItem>
               </SelectContent>
             </Select>
             

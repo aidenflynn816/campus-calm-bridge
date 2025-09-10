@@ -50,11 +50,11 @@ export interface MoodByIssueData {
   severity: 'low' | 'medium' | 'high';
 }
 
-export const useCounselorMoodData = (dateRange: number = 30) => {
+export const useCounselorMoodData = (dateRange: number = 30, studentFilter: string = "all", manuallyAssignedStudents: string[] = []) => {
   const { toast } = useToast();
 
   const { data: moodData = [], isLoading, error } = useQuery({
-    queryKey: ['counselor-mood-data', dateRange],
+    queryKey: ['counselor-mood-data', dateRange, studentFilter, manuallyAssignedStudents],
     queryFn: async () => {
       try {
         const { data: user } = await supabase.auth.getUser();
@@ -64,11 +64,18 @@ export const useCounselorMoodData = (dateRange: number = 30) => {
         cutoffDate.setDate(cutoffDate.getDate() - dateRange);
 
         // Fetch mood check-ins from students who have approved data sharing
-        const { data, error } = await supabase
+        let query = supabase
           .from('mood_check_ins')
           .select('*')
           .gte('created_at', cutoffDate.toISOString())
           .order('created_at', { ascending: false });
+
+        // Filter by manually assigned students if "my-students" is selected
+        if (studentFilter === "my-students" && manuallyAssignedStudents.length > 0) {
+          query = query.in('user_id', manuallyAssignedStudents);
+        }
+
+        const { data, error } = await query;
 
         if (error) {
           console.error('Error fetching counselor mood data:', error);
