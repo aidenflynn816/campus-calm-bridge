@@ -19,7 +19,9 @@ import { useToast } from "../../hooks/use-toast";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 const StudentList = () => {
   const navigate = useNavigate();
-  const { toast } = useToast();
+  const {
+    toast
+  } = useToast();
   const queryClient = useQueryClient();
   const {
     user
@@ -47,22 +49,31 @@ const StudentList = () => {
   // Mutation for deleting student account
   const deleteStudentMutation = useMutation({
     mutationFn: async (studentId: string) => {
-      const { data, error } = await supabase.functions.invoke('delete-student-account', {
-        body: { studentId },
+      const {
+        data,
+        error
+      } = await supabase.functions.invoke('delete-student-account', {
+        body: {
+          studentId
+        }
       });
-      
       if (error) throw error;
       return data;
     },
     onSuccess: (data, studentId) => {
       // Refresh the students list
-      queryClient.invalidateQueries({ queryKey: ['students'] });
-      queryClient.invalidateQueries({ queryKey: ['counselor-students'] });
-      queryClient.invalidateQueries({ queryKey: ['students-mood-data'] });
-      
+      queryClient.invalidateQueries({
+        queryKey: ['students']
+      });
+      queryClient.invalidateQueries({
+        queryKey: ['counselor-students']
+      });
+      queryClient.invalidateQueries({
+        queryKey: ['students-mood-data']
+      });
       toast({
         title: "Student account deleted",
-        description: data.message || "The student account has been successfully removed.",
+        description: data.message || "The student account has been successfully removed."
       });
     },
     onError: (error: any) => {
@@ -70,9 +81,9 @@ const StudentList = () => {
       toast({
         title: "Error",
         description: error.message || "Failed to delete student account. Please try again.",
-        variant: "destructive",
+        variant: "destructive"
       });
-    },
+    }
   });
 
   // Filter students based on search and filters
@@ -214,10 +225,7 @@ const StudentList = () => {
 
                     <div className="flex items-center justify-between pt-4 border-t border-border/50">
                       <div className="flex items-center gap-4">
-                        <div className="flex items-center gap-2 text-xs text-muted-foreground">
-                          <MessageCircle className="w-3 h-3" />
-                          <span>Messages available</span>
-                        </div>
+                        
                       </div>
 
                       <div className="flex items-center gap-2">
@@ -247,11 +255,7 @@ const StudentList = () => {
                             </AlertDialogHeader>
                             <AlertDialogFooter>
                               <AlertDialogCancel>Cancel</AlertDialogCancel>
-                              <AlertDialogAction
-                                onClick={() => deleteStudentMutation.mutate(student.user_id)}
-                                disabled={deleteStudentMutation.isPending}
-                                className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
-                              >
+                              <AlertDialogAction onClick={() => deleteStudentMutation.mutate(student.user_id)} disabled={deleteStudentMutation.isPending} className="bg-destructive text-destructive-foreground hover:bg-destructive/90">
                                 {deleteStudentMutation.isPending ? "Deleting..." : "Delete Account"}
                               </AlertDialogAction>
                             </AlertDialogFooter>
