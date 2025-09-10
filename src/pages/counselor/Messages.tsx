@@ -219,9 +219,6 @@ const CounselorMessages = () => {
                         <h3 className="font-semibold text-bridge-primary">
                           {selectedStudent?.full_name}
                         </h3>
-                        {isTyping && (
-                          <p className="text-sm text-bridge-text/70 animate-pulse">typing...</p>
-                        )}
                       </div>
                     </div>
                   </div>
@@ -272,7 +269,7 @@ const CounselorMessages = () => {
                                   <div
                                     className={`rounded-2xl px-4 py-3 shadow-sm ${
                                       isCurrentUser
-                                        ? "bg-gradient-to-r from-bridge-primary to-bridge-secondary text-white"
+                                        ? "bg-bridge-primary text-white"
                                         : "bg-white border border-bridge-muted/30 text-bridge-text"
                                     }`}
                                   >
@@ -290,6 +287,33 @@ const CounselorMessages = () => {
                             </motion.div>
                           );
                         })}
+                        
+                        {/* Typing indicator */}
+                        {isTyping && (
+                          <motion.div
+                            initial={{ opacity: 0, y: 20 }}
+                            animate={{ opacity: 1, y: 0 }}
+                            className="flex justify-start"
+                          >
+                            <div className="flex max-w-[75%]">
+                              <Avatar className="h-8 w-8 mr-2 border border-bridge-muted/30">
+                                <AvatarFallback className="bg-gradient-to-br from-bridge-secondary to-bridge-accent text-white text-sm">
+                                  {selectedStudent?.full_name.split(' ').map(n => n[0]).join('')}
+                                </AvatarFallback>
+                              </Avatar>
+                              <div>
+                                <div className="bg-white border border-bridge-muted/30 text-bridge-text rounded-2xl px-4 py-3 shadow-sm">
+                                  <div className="flex items-center space-x-1">
+                                    <div className="w-2 h-2 bg-bridge-text/50 rounded-full animate-bounce"></div>
+                                    <div className="w-2 h-2 bg-bridge-text/50 rounded-full animate-bounce" style={{ animationDelay: '0.1s' }}></div>
+                                    <div className="w-2 h-2 bg-bridge-text/50 rounded-full animate-bounce" style={{ animationDelay: '0.2s' }}></div>
+                                  </div>
+                                </div>
+                              </div>
+                            </div>
+                          </motion.div>
+                        )}
+                        
                         <div ref={messagesEndRef} />
                       </div>
                     )}
