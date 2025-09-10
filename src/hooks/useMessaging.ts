@@ -90,6 +90,7 @@ export const useMessaging = (recipientId: string) => {
     },
     onSuccess: async () => {
       queryClient.invalidateQueries({ queryKey: ['messages', currentUserId, recipientId] });
+      queryClient.invalidateQueries({ queryKey: ['students-with-messages', currentUserId] });
       toast({
         title: "Message sent",
         description: "Your message has been sent successfully."
@@ -156,6 +157,7 @@ export const useMessaging = (recipientId: string) => {
         console.log('📨 New message received:', payload);
         if (payload.new && payload.new.sender_id === recipientId) {
           queryClient.invalidateQueries({ queryKey: ['messages', currentUserId, recipientId] });
+          queryClient.invalidateQueries({ queryKey: ['students-with-messages', currentUserId] });
           
           // Mark message as read immediately if we're in this chat
           supabase

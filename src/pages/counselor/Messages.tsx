@@ -6,7 +6,7 @@ import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Send, MessageSquare, Search, Users, Mail } from "lucide-react";
 import { useMessaging } from "@/hooks/useMessaging";
-import { useStudents } from "@/hooks/useStudents";
+import { useStudentsWithMessages } from "@/hooks/useStudentsWithMessages";
 import { useDebounce } from "@/hooks/useDebounce";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { useAuth } from "@/contexts/AuthContext";
@@ -19,7 +19,7 @@ const CounselorMessages = () => {
   const [searchTerm, setSearchTerm] = useState("");
   const messagesEndRef = useRef<HTMLDivElement>(null);
   
-  const { students, isLoading: studentsLoading } = useStudents();
+  const { students, isLoading: studentsLoading } = useStudentsWithMessages();
   const {
     messages,
     isLoading: messagesLoading,
@@ -155,11 +155,31 @@ const CounselorMessages = () => {
                         </Avatar>
                         <div className="flex-1">
                           <h3 className="font-semibold text-bridge-primary">{student.full_name}</h3>
-                          <p className="text-sm text-bridge-text/60">Student</p>
-                          {student.unreadCount && student.unreadCount > 0 && (
-                            <span className="inline-flex items-center justify-center bg-bridge-primary text-white text-xs rounded-full h-5 w-5 mt-1">
-                              {student.unreadCount}
-                            </span>
+                          <div className="flex items-center justify-between">
+                            <p className="text-sm text-bridge-text/60">
+                              {student.lastMessage ? (
+                                <span className="truncate max-w-[150px] block">
+                                  {student.lastMessage}
+                                </span>
+                              ) : (
+                                "Student"
+                              )}
+                            </p>
+                            {student.unreadCount > 0 && (
+                              <span className="inline-flex items-center justify-center bg-bridge-primary text-white text-xs rounded-full h-5 w-5 ml-2 flex-shrink-0">
+                                {student.unreadCount}
+                              </span>
+                            )}
+                          </div>
+                          {student.lastMessageTime && (
+                            <p className="text-xs text-bridge-text/40 mt-1">
+                              {new Date(student.lastMessageTime).toLocaleDateString([], { 
+                                month: 'short', 
+                                day: 'numeric',
+                                hour: '2-digit', 
+                                minute: '2-digit' 
+                              })}
+                            </p>
                           )}
                         </div>
                       </motion.div>
