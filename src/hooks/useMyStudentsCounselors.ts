@@ -1,9 +1,11 @@
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
+import { useCounselorStudents } from "./useCounselorStudents";
 
 export const useMyStudentsCounselors = () => {
   const { user } = useAuth();
+  const { manuallyAssignedStudents } = useCounselorStudents();
 
   const { data: recentMessages = [], isLoading } = useQuery({
     queryKey: ['recent-messages', user?.id],
@@ -53,9 +55,15 @@ export const useMyStudentsCounselors = () => {
     return getRecentlyMessagedUsers().includes(userId);
   };
 
+  // Check if user is "My Student" (either messaged recently OR manually assigned)
+  const isMyStudent = (userId: string) => {
+    return hasRecentlyMessaged(userId) || manuallyAssignedStudents.includes(userId);
+  };
+
   return {
     recentlyMessagedUsers: getRecentlyMessagedUsers(),
     hasRecentlyMessaged,
+    isMyStudent,
     isLoading,
   };
 };

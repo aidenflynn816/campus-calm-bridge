@@ -94,6 +94,30 @@ export type Database = {
           },
         ]
       }
+      counselor_students: {
+        Row: {
+          counselor_id: string
+          created_at: string
+          id: string
+          student_id: string
+          updated_at: string
+        }
+        Insert: {
+          counselor_id: string
+          created_at?: string
+          id?: string
+          student_id: string
+          updated_at?: string
+        }
+        Update: {
+          counselor_id?: string
+          created_at?: string
+          id?: string
+          student_id?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
       data_sharing_requests: {
         Row: {
           counselor_id: string

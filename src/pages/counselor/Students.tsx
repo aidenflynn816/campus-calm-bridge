@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-import { User, Calendar, MessageCircle, TrendingUp, Search, Filter } from "lucide-react";
+import { User, Calendar, MessageCircle, TrendingUp, Search, Filter, Star, StarOff } from "lucide-react";
 import Layout from "../../components/Layout";
 import { Card, CardContent, CardHeader, CardTitle } from "../../components/ui/card";
 import { Button } from "../../components/ui/button";
@@ -13,6 +13,7 @@ import { useMoodCheckins } from "../../hooks/useMoodCheckins";
 import { useAppointments } from "../../hooks/useAppointments";
 import { useAuth } from "../../contexts/AuthContext";
 import { useMyStudentsCounselors } from "../../hooks/useMyStudentsCounselors";
+import { useCounselorStudents } from "../../hooks/useCounselorStudents";
 
 const StudentList = () => {
   const navigate = useNavigate();
@@ -20,7 +21,8 @@ const StudentList = () => {
   const { students, isLoading } = useStudents();
   const { moodCheckins } = useMoodCheckins();
   const { appointments } = useAppointments();
-  const { hasRecentlyMessaged } = useMyStudentsCounselors();
+  const { isMyStudent } = useMyStudentsCounselors();
+  const { isManuallyAssigned, addStudent, removeStudent, isAddingStudent, isRemovingStudent } = useCounselorStudents();
   const [searchQuery, setSearchQuery] = useState("");
   const [studentFilter, setStudentFilter] = useState("all");
 
@@ -30,7 +32,7 @@ const StudentList = () => {
 
     // Filter by student relationship
     const matchesStudentFilter = studentFilter === "all" || 
-      (studentFilter === "my-students" && hasRecentlyMessaged(student.user_id));
+      (studentFilter === "my-students" && isMyStudent(student.user_id));
     
     return matchesSearch && matchesStudentFilter;
   });
@@ -149,9 +151,17 @@ const StudentList = () => {
                         </Avatar>
                         
                         <div className="flex-1 min-w-0">
-                          <h3 className="text-lg font-semibold truncate">
-                            {student.full_name || 'Unknown Student'}
-                          </h3>
+                          <div className="flex items-center gap-2">
+                            <h3 className="text-lg font-semibold truncate">
+                              {student.full_name || 'Unknown Student'}
+                            </h3>
+                            {isManuallyAssigned(student.user_id) && (
+                              <Badge variant="secondary" className="text-xs px-2 py-1 bg-primary/10 text-primary border-primary/20">
+                                <Star className="w-3 h-3 mr-1" />
+                                My Student
+                              </Badge>
+                            )}
+                          </div>
                           <div className="flex items-center gap-4 mt-2 text-sm text-muted-foreground">
                             <span>Last check-in: {stats.lastCheckin}</span>
                             <span>•</span>
@@ -189,6 +199,24 @@ const StudentList = () => {
                       </div>
 
                       <div className="flex items-center gap-2">
+                        <Button 
+                          variant="outline" 
+                          size="sm"
+                          onClick={() => isManuallyAssigned(student.user_id) ? removeStudent(student.user_id) : addStudent(student.user_id)}
+                          disabled={isAddingStudent || isRemovingStudent}
+                        >
+                          {isManuallyAssigned(student.user_id) ? (
+                            <>
+                              <StarOff className="h-3 w-3 mr-1" />
+                              Remove
+                            </>
+                          ) : (
+                            <>
+                              <Star className="h-3 w-3 mr-1" />
+                              Add
+                            </>
+                          )}
+                        </Button>
                         <Button variant="outline" size="sm" onClick={() => navigate(`/counselor/students/${student.user_id}`)}>
                           View Details
                         </Button>

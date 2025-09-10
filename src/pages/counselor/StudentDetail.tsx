@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { useParams, useNavigate } from "react-router-dom";
-import { ArrowLeft, MessageCircle, Calendar, TrendingUp, Shield, Clock } from "lucide-react";
+import { ArrowLeft, MessageCircle, Calendar, TrendingUp, Shield, Clock, Star, StarOff } from "lucide-react";
 import Layout from "../../components/Layout";
 import { Card, CardContent, CardHeader, CardTitle } from "../../components/ui/card";
 import { Button } from "../../components/ui/button";
@@ -12,6 +12,7 @@ import { useStudents } from "../../hooks/useStudents";
 import { useMoodCheckins } from "../../hooks/useMoodCheckins";
 import { useAppointments } from "../../hooks/useAppointments";
 import { useDataSharingRequests } from "../../hooks/useDataSharingRequests";
+import { useCounselorStudents } from "../../hooks/useCounselorStudents";
 import MoodChart from "../../components/MoodChart";
 
 import { useToast } from "../../hooks/use-toast";
@@ -29,6 +30,7 @@ const StudentDetail = () => {
     getRequestByStudentId, 
     isLoading: requestLoading 
   } = useDataSharingRequests();
+  const { isManuallyAssigned, addStudent, removeStudent, isAddingStudent, isRemovingStudent } = useCounselorStudents();
 
   const [requestMessage, setRequestMessage] = useState("");
   const [showRequestForm, setShowRequestForm] = useState(false);
@@ -133,7 +135,15 @@ const StudentDetail = () => {
                 </Avatar>
                 
                 <div>
-                  <h2 className="text-2xl font-semibold">{student.full_name || 'Unknown Student'}</h2>
+                  <div className="flex items-center gap-3">
+                    <h2 className="text-2xl font-semibold">{student.full_name || 'Unknown Student'}</h2>
+                    {isManuallyAssigned(studentId || '') && (
+                      <Badge variant="secondary" className="bg-primary/10 text-primary border-primary/20">
+                        <Star className="w-3 h-3 mr-1" />
+                        My Student
+                      </Badge>
+                    )}
+                  </div>
                   <div className="flex items-center gap-4 mt-2 text-sm text-muted-foreground">
                     <span>Last check-in: {stats.lastCheckin}</span>
                     <span>•</span>
@@ -174,6 +184,24 @@ const StudentDetail = () => {
               </div>
 
               <div className="flex items-center gap-2">
+                <Button 
+                  variant="outline" 
+                  size="sm"
+                  onClick={() => studentId && (isManuallyAssigned(studentId) ? removeStudent(studentId) : addStudent(studentId))}
+                  disabled={isAddingStudent || isRemovingStudent}
+                >
+                  {isManuallyAssigned(studentId || '') ? (
+                    <>
+                      <StarOff className="h-4 w-4 mr-1" />
+                      Remove from My Students
+                    </>
+                  ) : (
+                    <>
+                      <Star className="h-4 w-4 mr-1" />
+                      Add to My Students
+                    </>
+                  )}
+                </Button>
                 <Button variant="outline" size="sm">
                   <MessageCircle className="h-4 w-4 mr-1" />
                   Message
