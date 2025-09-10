@@ -6,12 +6,12 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import Layout from "@/components/Layout";
 import { useCounselors } from "@/hooks/useCounselors";
-import { useMyStudentsCounselors } from "@/hooks/useMyStudentsCounselors";
+import { useStudentCounselors } from "@/hooks/useStudentCounselors";
 
 export default function StudentCounselors() {
   const navigate = useNavigate();
   const { counselors, isLoading } = useCounselors();
-  const { hasRecentlyMessaged } = useMyStudentsCounselors();
+  const { isMyCounselor } = useStudentCounselors();
 
   const openMessagePage = (counselorId: string) => {
     navigate(`/student/messages?counselor=${counselorId}`);
@@ -49,7 +49,7 @@ export default function StudentCounselors() {
                 </Avatar>
                 <div className="flex items-center justify-center gap-2">
                   <CardTitle className="text-xl">{counselor.full_name}</CardTitle>
-                  {hasRecentlyMessaged(counselor.user_id) && (
+                  {isMyCounselor(counselor.user_id) && (
                     <Badge variant="secondary" className="text-xs px-2 py-1 bg-primary/10 text-primary border-primary/20">
                       <Heart className="w-3 h-3 mr-1" />
                       My Counselor

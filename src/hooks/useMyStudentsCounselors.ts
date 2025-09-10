@@ -1,5 +1,3 @@
-import { useQuery } from "@tanstack/react-query";
-import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import { useCounselorStudents } from "./useCounselorStudents";
 
@@ -7,63 +5,21 @@ export const useMyStudentsCounselors = () => {
   const { user } = useAuth();
   const { manuallyAssignedStudents } = useCounselorStudents();
 
-  const { data: recentMessages = [], isLoading } = useQuery({
-    queryKey: ['recent-messages', user?.id],
-    queryFn: async () => {
-      if (!user?.id) return [];
-      
-      // Get messages from the last 3 months
-      const threeMonthsAgo = new Date();
-      threeMonthsAgo.setMonth(threeMonthsAgo.getMonth() - 3);
-      
-      const { data, error } = await supabase
-        .from('messages')
-        .select('sender_id, recipient_id, created_at')
-        .or(`sender_id.eq.${user.id},recipient_id.eq.${user.id}`)
-        .gte('created_at', threeMonthsAgo.toISOString())
-        .order('created_at', { ascending: false });
-
-      if (error) {
-        console.error('Error fetching recent messages:', error);
-        return [];
-      }
-
-      return data || [];
-    },
-    enabled: !!user?.id,
-  });
-
-  // Get unique user IDs that the current user has messaged with in the last 3 months
-  const getRecentlyMessagedUsers = () => {
-    if (!user?.id) return [];
-    
-    const userIds = new Set<string>();
-    
-    recentMessages.forEach(message => {
-      if (message.sender_id === user.id) {
-        userIds.add(message.recipient_id);
-      } else if (message.recipient_id === user.id) {
-        userIds.add(message.sender_id);
-      }
-    });
-    
-    return Array.from(userIds);
-  };
-
-  // Check if current user has messaged a specific user in the last 3 months
-  const hasRecentlyMessaged = (userId: string) => {
-    return getRecentlyMessagedUsers().includes(userId);
-  };
-
-  // Check if user is "My Student" (either messaged recently OR manually assigned)
+  // Check if user is "My Student" (manually assigned only)
   const isMyStudent = (userId: string) => {
-    return hasRecentlyMessaged(userId) || manuallyAssignedStudents.includes(userId);
+    return manuallyAssignedStudents.includes(userId);
+  };
+
+  // For students, check if they are assigned to any counselor
+  // This would need a separate query, but for now we'll use the existing logic
+  const hasRecentlyMessaged = (userId: string) => {
+    // This is kept for backward compatibility but will be replaced with manual assignment check
+    return false;
   };
 
   return {
-    recentlyMessagedUsers: getRecentlyMessagedUsers(),
-    hasRecentlyMessaged,
     isMyStudent,
-    isLoading,
+    hasRecentlyMessaged, // Deprecated, kept for compatibility
+    isLoading: false,
   };
 };
