@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import Layout from "../../components/Layout";
 import { Button } from "@/components/ui/button";
@@ -13,11 +12,9 @@ import IssuesFrequencyChart from "@/components/counselor/IssuesFrequencyChart";
 import CalendarHeatmap from "@/components/counselor/CalendarHeatmap";
 import MoodByIssueTable from "@/components/counselor/MoodByIssueTable";
 import { BarChart3, TrendingUp, Calendar, Table, AlertCircle } from "lucide-react";
-
 const MoodInsights = () => {
   const [dateRange, setDateRange] = useState(30);
   const [selectedGroup, setSelectedGroup] = useState("all");
-
   const {
     moodData,
     isLoading,
@@ -27,34 +24,27 @@ const MoodInsights = () => {
     getCalendarHeatmapData,
     getMoodByIssueData
   } = useCounselorMoodData(dateRange);
-
   const overviewMetrics = getOverviewMetrics();
   const trendData = getMoodTrendData(dateRange);
   const issuesFrequencyData = getIssueFrequencyData();
   const calendarHeatmapData = getCalendarHeatmapData(30);
   const moodByIssueData = getMoodByIssueData();
-
   const handleDrillDown = (issue: string, period: string) => {
     console.log(`Drilling down into ${issue} for ${period}`);
     // TODO: Implement drill-down functionality
     // This could open a modal or navigate to a detailed view
   };
-
   if (isLoading) {
-    return (
-      <Layout>
+    return <Layout>
         <div className="flex items-center justify-center h-64">
           <div className="text-center">
             <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-bridge-primary mx-auto mb-4"></div>
             <p className="text-bridge-text/70">Loading mood insights...</p>
           </div>
         </div>
-      </Layout>
-    );
+      </Layout>;
   }
-
-  return (
-    <Layout>
+  return <Layout>
       <div className="space-y-6">
         {/* Header */}
         <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
@@ -77,7 +67,7 @@ const MoodInsights = () => {
               </SelectContent>
             </Select>
             
-            <Select value={dateRange.toString()} onValueChange={(value) => setDateRange(parseInt(value))}>
+            <Select value={dateRange.toString()} onValueChange={value => setDateRange(parseInt(value))}>
               <SelectTrigger className="w-32">
                 <SelectValue placeholder="Date range" />
               </SelectTrigger>
@@ -91,8 +81,7 @@ const MoodInsights = () => {
         </div>
 
         {/* Data Access Notice */}
-        {moodData.length === 0 && (
-          <Card className="border-yellow-200 bg-yellow-50">
+        {moodData.length === 0 && <Card className="border-yellow-200 bg-yellow-50">
             <CardContent className="pt-6">
               <div className="flex items-center gap-3">
                 <AlertCircle className="h-5 w-5 text-yellow-600" />
@@ -104,11 +93,9 @@ const MoodInsights = () => {
                 </div>
               </div>
             </CardContent>
-          </Card>
-        )}
+          </Card>}
 
-        {moodData.length > 0 && (
-          <>
+        {moodData.length > 0 && <>
             {/* Overview Metrics */}
             <MoodOverviewMetrics metrics={overviewMetrics} />
 
@@ -123,10 +110,7 @@ const MoodInsights = () => {
                   <BarChart3 className="h-4 w-4" />
                   Issues
                 </TabsTrigger>
-                <TabsTrigger value="calendar" className="flex items-center gap-2">
-                  <Calendar className="h-4 w-4" />
-                  Calendar
-                </TabsTrigger>
+                
                 <TabsTrigger value="analysis" className="flex items-center gap-2">
                   <Table className="h-4 w-4" />
                   Analysis
@@ -134,39 +118,23 @@ const MoodInsights = () => {
               </TabsList>
 
               <TabsContent value="trends" className="space-y-6">
-                <MoodTrendChart 
-                  data={trendData} 
-                  title={`Mood Trend Analysis (${dateRange} days)`}
-                />
+                <MoodTrendChart data={trendData} title={`Mood Trend Analysis (${dateRange} days)`} />
               </TabsContent>
 
               <TabsContent value="issues" className="space-y-6">
-                <IssuesFrequencyChart 
-                  data={issuesFrequencyData}
-                  title="Issues Frequency Analysis"
-                  onDrillDown={handleDrillDown}
-                />
+                <IssuesFrequencyChart data={issuesFrequencyData} title="Issues Frequency Analysis" onDrillDown={handleDrillDown} />
               </TabsContent>
 
               <TabsContent value="calendar" className="space-y-6">
-                <CalendarHeatmap 
-                  data={calendarHeatmapData}
-                  title="Issues Calendar Heatmap"
-                />
+                <CalendarHeatmap data={calendarHeatmapData} title="Issues Calendar Heatmap" />
               </TabsContent>
 
               <TabsContent value="analysis" className="space-y-6">
-                <MoodByIssueTable 
-                  data={moodByIssueData}
-                  title="Mood Analysis by Issue Type"
-                />
+                <MoodByIssueTable data={moodByIssueData} title="Mood Analysis by Issue Type" />
               </TabsContent>
             </Tabs>
-          </>
-        )}
+          </>}
       </div>
-    </Layout>
-  );
+    </Layout>;
 };
-
 export default MoodInsights;
