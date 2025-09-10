@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-import { User, Calendar, MessageCircle, TrendingUp, Search, Filter, Star, StarOff } from "lucide-react";
+import { User, Calendar, MessageCircle, TrendingUp, Search, Filter, Star, StarOff, Trash2 } from "lucide-react";
 import Layout from "../../components/Layout";
 import { Card, CardContent, CardHeader, CardTitle } from "../../components/ui/card";
 import { Button } from "../../components/ui/button";
@@ -8,13 +8,19 @@ import { Input } from "../../components/ui/input";
 import { Badge } from "../../components/ui/badge";
 import { Avatar, AvatarFallback, AvatarImage } from "../../components/ui/avatar";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "../../components/ui/select";
+import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from "../../components/ui/alert-dialog";
 import { useStudents } from "../../hooks/useStudents";
 import { useAppointments } from "../../hooks/useAppointments";
 import { useAuth } from "../../contexts/AuthContext";
 import { useCounselorStudents } from "../../hooks/useCounselorStudents";
 import { useStudentsMoodData } from "../../hooks/useStudentsMoodData";
+import { supabase } from "../../integrations/supabase/client";
+import { useToast } from "../../hooks/use-toast";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
 const StudentList = () => {
   const navigate = useNavigate();
+  const { toast } = useToast();
+  const queryClient = useQueryClient();
   const {
     user
   } = useAuth();
@@ -37,6 +43,37 @@ const StudentList = () => {
   } = useCounselorStudents();
   const [searchQuery, setSearchQuery] = useState("");
   const [studentFilter, setStudentFilter] = useState("all");
+
+  // Mutation for deleting student account
+  const deleteStudentMutation = useMutation({
+    mutationFn: async (studentId: string) => {
+      const { data, error } = await supabase.functions.invoke('delete-student-account', {
+        body: { studentId },
+      });
+      
+      if (error) throw error;
+      return data;
+    },
+    onSuccess: (data, studentId) => {
+      // Refresh the students list
+      queryClient.invalidateQueries({ queryKey: ['students'] });
+      queryClient.invalidateQueries({ queryKey: ['counselor-students'] });
+      queryClient.invalidateQueries({ queryKey: ['students-mood-data'] });
+      
+      toast({
+        title: "Student account deleted",
+        description: data.message || "The student account has been successfully removed.",
+      });
+    },
+    onError: (error: any) => {
+      console.error('Error deleting student:', error);
+      toast({
+        title: "Error",
+        description: error.message || "Failed to delete student account. Please try again.",
+        variant: "destructive",
+      });
+    },
+  });
 
   // Filter students based on search and filters
   const filteredStudents = students.filter(student => {
@@ -193,6 +230,34 @@ const StudentList = () => {
                               Add
                             </>}
                         </Button>
+                        
+                        <AlertDialog>
+                          <AlertDialogTrigger asChild>
+                            <Button variant="outline" size="sm" className="text-destructive hover:text-destructive hover:bg-destructive/10 border-destructive/20 hover:border-destructive/30">
+                              <Trash2 className="h-3 w-3 mr-1" />
+                              Delete Account
+                            </Button>
+                          </AlertDialogTrigger>
+                          <AlertDialogContent>
+                            <AlertDialogHeader>
+                              <AlertDialogTitle>Delete Student Account</AlertDialogTitle>
+                              <AlertDialogDescription>
+                                Are you sure you want to permanently delete {student.full_name}'s account? This action cannot be undone and will remove all their data including mood check-ins, appointments, and messages.
+                              </AlertDialogDescription>
+                            </AlertDialogHeader>
+                            <AlertDialogFooter>
+                              <AlertDialogCancel>Cancel</AlertDialogCancel>
+                              <AlertDialogAction
+                                onClick={() => deleteStudentMutation.mutate(student.user_id)}
+                                disabled={deleteStudentMutation.isPending}
+                                className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+                              >
+                                {deleteStudentMutation.isPending ? "Deleting..." : "Delete Account"}
+                              </AlertDialogAction>
+                            </AlertDialogFooter>
+                          </AlertDialogContent>
+                        </AlertDialog>
+
                         <Button variant="default" size="sm" onClick={() => navigate(`/counselor/students/${student.user_id}`)} className="bg-primary hover:bg-primary/90 shadow-sm">
                           View Details
                         </Button>
