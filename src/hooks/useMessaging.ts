@@ -141,14 +141,19 @@ export const useMessaging = (recipientId: string) => {
   useEffect(() => {
     if (!currentUserId || !recipientId) return;
     
+    console.log('🚀 Setting up realtime for messages:', { currentUserId, recipientId });
+    
     const channel = supabase
-      .channel('realtime-messages')
+      .channel(`messages-${currentUserId}-${recipientId}`, {
+        config: { presence: { key: currentUserId } }
+      })
       .on('postgres_changes', { 
         event: 'INSERT', 
         schema: 'public',
         table: 'messages',
         filter: `recipient_id=eq.${currentUserId}`
       }, (payload) => {
+        console.log('📨 New message received:', payload);
         if (payload.new && payload.new.sender_id === recipientId) {
           queryClient.invalidateQueries({ queryKey: ['messages', currentUserId, recipientId] });
           
@@ -159,9 +164,21 @@ export const useMessaging = (recipientId: string) => {
             .eq('id', payload.new.id);
         }
       })
-      .subscribe();
+      .on('postgres_changes', {
+        event: 'UPDATE',
+        schema: 'public', 
+        table: 'messages',
+        filter: `sender_id=eq.${currentUserId}`
+      }, (payload) => {
+        console.log('📝 Message updated:', payload);
+        queryClient.invalidateQueries({ queryKey: ['messages', currentUserId, recipientId] });
+      })
+      .subscribe((status) => {
+        console.log('💡 Realtime subscription status:', status);
+      });
 
     return () => {
+      console.log('🔌 Cleaning up realtime subscription');
       supabase.removeChannel(channel);
     };
   }, [recipientId, currentUserId, queryClient]);
@@ -170,19 +187,25 @@ export const useMessaging = (recipientId: string) => {
   useEffect(() => {
     if (!currentUserId || !recipientId) return;
     
+    console.log('⌨️ Setting up typing status for:', { currentUserId, recipientId });
+    
     const channel = supabase
-      .channel('realtime-typing')
+      .channel(`typing-${currentUserId}-${recipientId}`)
       .on('postgres_changes', {
-        event: 'UPDATE',
+        event: '*',
         schema: 'public',
         table: 'typing_status',
         filter: `user_id=eq.${recipientId}`
       }, (payload) => {
-        if (payload.new && payload.new.chat_with_user_id === currentUserId) {
-          setIsTyping(!!payload.new.is_typing);
+        console.log('⌨️ Typing status changed:', payload);
+        const newData = payload.new as any;
+        if (newData && newData.chat_with_user_id === currentUserId) {
+          setIsTyping(!!newData.is_typing);
         }
       })
-      .subscribe();
+      .subscribe((status) => {
+        console.log('⌨️ Typing subscription status:', status);
+      });
 
     return () => {
       supabase.removeChannel(channel);
