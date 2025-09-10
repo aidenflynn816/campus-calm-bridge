@@ -63,6 +63,43 @@ serve(async (req) => {
 
     const recipientEmail = recipientUserData.user.email as string;
 
+    // Check if we sent an email to this recipient recently (within 3 minutes)
+    const threeMinutesAgo = new Date(Date.now() - 3 * 60 * 1000).toISOString();
+    const { data: recentEmails, error: recentEmailsError } = await supabaseAdmin
+      .from("email_notifications")
+      .select("sent_at")
+      .eq("recipient_email", recipientEmail)
+      .eq("type", "message")
+      .gte("sent_at", threeMinutesAgo)
+      .order("sent_at", { ascending: false })
+      .limit(1);
+
+    if (recentEmailsError) {
+      console.error("Error checking recent emails:", recentEmailsError);
+    }
+
+    // If we found a recent email, skip sending and just log the batched notification
+    if (recentEmails && recentEmails.length > 0) {
+      console.log(`Batching email notification for ${recipientEmail} - last sent: ${recentEmails[0].sent_at}`);
+      
+      // Log the notification without sending email
+      await supabaseAdmin
+        .from("email_notifications")
+        .insert({
+          recipient_id,
+          recipient_email: recipientEmail,
+          sender_name: senderName,
+          type: "message",
+          thread_key: `${sender_id}-${recipient_id}`,
+          sent_at: null // Mark as not sent
+        });
+
+      return new Response(
+        JSON.stringify({ success: true, batched: true, message: "Email batched due to recent notification" }),
+        { status: 200, headers: { "Content-Type": "application/json", ...corsHeaders } }
+      );
+    }
+
     // Send privacy-safe email (no message content)
     const subject = `New message from ${senderName} - Bridge`;
     const html = `
@@ -96,8 +133,23 @@ serve(async (req) => {
       );
     }
 
+    // Log the successful email notification
+    const currentTime = new Date().toISOString();
+    await supabaseAdmin
+      .from("email_notifications")
+      .insert({
+        recipient_id,
+        recipient_email: recipientEmail,
+        sender_name: senderName,
+        type: "message",
+        thread_key: `${sender_id}-${recipient_id}`,
+        sent_at: currentTime
+      });
+
+    console.log(`Email sent successfully to ${recipientEmail} from ${senderName}`);
+
     return new Response(
-      JSON.stringify({ success: true }),
+      JSON.stringify({ success: true, sent: true }),
       { status: 200, headers: { "Content-Type": "application/json", ...corsHeaders } }
     );
   } catch (error) {
