@@ -12,34 +12,29 @@ import { useStudents } from "../../hooks/useStudents";
 import { useMoodCheckins } from "../../hooks/useMoodCheckins";
 import { useAppointments } from "../../hooks/useAppointments";
 import { useAuth } from "../../contexts/AuthContext";
+import { useMyStudentsCounselors } from "../../hooks/useMyStudentsCounselors";
+
 const StudentList = () => {
   const navigate = useNavigate();
-  const {
-    user
-  } = useAuth();
-  const {
-    students,
-    isLoading
-  } = useStudents();
-  const {
-    moodCheckins
-  } = useMoodCheckins();
-  const {
-    appointments
-  } = useAppointments();
+  const { user } = useAuth();
+  const { students, isLoading } = useStudents();
+  const { moodCheckins } = useMoodCheckins();
+  const { appointments } = useAppointments();
+  const { hasRecentlyMessaged } = useMyStudentsCounselors();
   const [searchQuery, setSearchQuery] = useState("");
-  const [statusFilter, setStatusFilter] = useState("all");
-  const [moodFilter, setMoodFilter] = useState("all");
+  const [studentFilter, setStudentFilter] = useState("all");
 
   // Filter students based on search and filters
   const filteredStudents = students.filter(student => {
     const matchesSearch = student.full_name?.toLowerCase().includes(searchQuery.toLowerCase()) || false;
 
-    // Get recent mood for this student
-    const recentMood = moodCheckins.filter(checkin => checkin.user_id === student.user_id).sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime())[0];
-    const matchesMoodFilter = moodFilter === "all" || moodFilter === "positive" && recentMood && recentMood.mood_rating >= 4 || moodFilter === "neutral" && recentMood && recentMood.mood_rating === 3 || moodFilter === "negative" && recentMood && recentMood.mood_rating <= 2 || moodFilter === "no-data" && !recentMood;
-    return matchesSearch && matchesMoodFilter;
+    // Filter by student relationship
+    const matchesStudentFilter = studentFilter === "all" || 
+      (studentFilter === "my-students" && hasRecentlyMessaged(student.user_id));
+    
+    return matchesSearch && matchesStudentFilter;
   });
+
   const getStudentStats = (studentId: string) => {
     const studentMoods = moodCheckins.filter(checkin => checkin.user_id === studentId);
     const studentAppointments = appointments.filter(apt => apt.student_id === studentId);
@@ -55,15 +50,19 @@ const StudentList = () => {
       lastCheckin: recentMood ? new Date(recentMood.created_at).toLocaleDateString() : 'Never'
     };
   };
+
   const getMoodColor = (rating: number) => {
     if (rating >= 4) return "text-emerald-600 bg-emerald-50 dark:text-emerald-400 dark:bg-emerald-950";
     if (rating === 3) return "text-amber-600 bg-amber-50 dark:text-amber-400 dark:bg-amber-950";
     return "text-red-600 bg-red-50 dark:text-red-400 dark:bg-red-950";
   };
+
   if (isLoading) {
-    return <Layout>
+    return (
+      <Layout>
         <div className="space-y-4">
-          {[...Array(3)].map((_, i) => <Card key={i} className="animate-pulse">
+          {[...Array(3)].map((_, i) => (
+            <Card key={i} className="animate-pulse">
               <CardContent className="p-6">
                 <div className="flex items-center space-x-4">
                   <div className="w-12 h-12 bg-muted rounded-full"></div>
@@ -73,11 +72,15 @@ const StudentList = () => {
                   </div>
                 </div>
               </CardContent>
-            </Card>)}
+            </Card>
+          ))}
         </div>
-      </Layout>;
+      </Layout>
+    );
   }
-  return <Layout>
+
+  return (
+    <Layout>
       <div className="space-y-6">
         <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
           <div>
@@ -97,19 +100,21 @@ const StudentList = () => {
             <div className="flex flex-col sm:flex-row gap-4">
               <div className="relative flex-1">
                 <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-                <Input placeholder="Search students..." value={searchQuery} onChange={e => setSearchQuery(e.target.value)} className="pl-10" />
+                <Input 
+                  placeholder="Search students..." 
+                  value={searchQuery} 
+                  onChange={e => setSearchQuery(e.target.value)} 
+                  className="pl-10" 
+                />
               </div>
-              <Select value={moodFilter} onValueChange={setMoodFilter}>
+              <Select value={studentFilter} onValueChange={setStudentFilter}>
                 <SelectTrigger className="w-[180px]">
                   <Filter className="h-4 w-4 mr-2" />
-                  <SelectValue placeholder="Filter by mood" />
+                  <SelectValue placeholder="Filter students" />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="all">All moods</SelectItem>
-                  <SelectItem value="positive">Positive (4-5)</SelectItem>
-                  <SelectItem value="neutral">Neutral (3)</SelectItem>
-                  <SelectItem value="negative">Negative (1-2)</SelectItem>
-                  <SelectItem value="no-data">No recent data</SelectItem>
+                  <SelectItem value="all">All Students</SelectItem>
+                  <SelectItem value="my-students">My Students</SelectItem>
                 </SelectContent>
               </Select>
             </div>
@@ -118,17 +123,21 @@ const StudentList = () => {
 
         {/* Students List */}
         <div className="grid gap-4">
-          {filteredStudents.length === 0 ? <Card>
+          {filteredStudents.length === 0 ? (
+            <Card>
               <CardContent className="p-8 text-center">
                 <User className="mx-auto h-12 w-12 text-muted-foreground mb-4" />
                 <h3 className="text-lg font-medium mb-2">No students found</h3>
                 <p className="text-muted-foreground">
-                  {searchQuery || moodFilter !== "all" ? "Try adjusting your search or filters" : "No students have been assigned to you yet"}
+                  {searchQuery || studentFilter !== "all" ? "Try adjusting your search or filters" : "No students found"}
                 </p>
               </CardContent>
-            </Card> : filteredStudents.map(student => {
-          const stats = getStudentStats(student.user_id);
-          return <Card key={student.id} className="hover:shadow-md transition-shadow">
+            </Card>
+          ) : (
+            filteredStudents.map(student => {
+              const stats = getStudentStats(student.user_id);
+              return (
+                <Card key={student.id} className="hover:shadow-md transition-shadow">
                   <CardContent className="p-6">
                     <div className="flex items-start justify-between">
                       <div className="flex items-center space-x-4 flex-1">
@@ -152,14 +161,18 @@ const StudentList = () => {
                       </div>
 
                       <div className="flex items-center gap-3 ml-4">
-                        {stats.recentMood && <Badge variant="secondary" className={`${getMoodColor(stats.recentMood.mood_rating)} border-0`}>
+                        {stats.recentMood && (
+                          <Badge variant="secondary" className={`${getMoodColor(stats.recentMood.mood_rating)} border-0`}>
                             {stats.recentMood.mood_emoji} {stats.recentMood.mood_rating}/5
-                          </Badge>}
+                          </Badge>
+                        )}
                         
-                        {stats.upcomingAppointments > 0 && <Badge variant="outline" className="text-blue-600 border-blue-200 dark:text-blue-400 dark:border-blue-800">
+                        {stats.upcomingAppointments > 0 && (
+                          <Badge variant="outline" className="text-blue-600 border-blue-200 dark:text-blue-400 dark:border-blue-800">
                             <Calendar className="h-3 w-3 mr-1" />
                             {stats.upcomingAppointments} upcoming
-                          </Badge>}
+                          </Badge>
+                        )}
                       </div>
                     </div>
 
@@ -179,15 +192,17 @@ const StudentList = () => {
                         <Button variant="outline" size="sm" onClick={() => navigate(`/counselor/students/${student.user_id}`)}>
                           View Details
                         </Button>
-                        
-                        
                       </div>
                     </div>
                   </CardContent>
-                </Card>;
-        })}
+                </Card>
+              );
+            })
+          )}
         </div>
       </div>
-    </Layout>;
+    </Layout>
+  );
 };
+
 export default StudentList;
