@@ -131,67 +131,98 @@ const StudentList = () => {
               </CardContent>
             </Card> : filteredStudents.map(student => {
           const stats = getStudentStats(student.user_id);
-          return <Card key={student.id} className="hover:shadow-md transition-shadow">
+          return <Card key={student.id} className="hover:shadow-lg transition-all duration-200 border-0 bg-gradient-to-r from-card to-card/80">
                   <CardContent className="p-6">
-                    <div className="flex items-start justify-between">
+                    <div className="flex items-start justify-between mb-4">
                       <div className="flex items-center space-x-4 flex-1">
-                        <Avatar className="h-12 w-12">
+                        <Avatar className="h-14 w-14 ring-2 ring-primary/10">
                           <AvatarImage src={student.avatar_url} />
-                          <AvatarFallback>
+                          <AvatarFallback className="bg-primary/10 text-primary font-medium">
                             {student.full_name?.split(' ').map(n => n[0]).join('') || 'U'}
                           </AvatarFallback>
                         </Avatar>
                         
                         <div className="flex-1 min-w-0">
-                          <div className="flex items-center gap-2">
-                            <h3 className="text-lg font-semibold truncate">
+                          <div className="flex items-center gap-2 mb-1">
+                            <h3 className="text-xl font-semibold truncate text-foreground">
                               {student.full_name || 'Unknown Student'}
                             </h3>
-                            {isManuallyAssigned(student.user_id) && <Badge variant="secondary" className="text-xs px-2 py-1 bg-primary/10 text-primary border-primary/20">
-                                <Star className="w-3 h-3 mr-1" />
+                            {isManuallyAssigned(student.user_id) && (
+                              <Badge variant="secondary" className="text-xs px-2.5 py-1 bg-primary text-primary-foreground border-0 shadow-sm">
+                                <Star className="w-3 h-3 mr-1 fill-current" />
                                 My Student
-                              </Badge>}
+                              </Badge>
+                            )}
                           </div>
-                          <div className="flex items-center gap-4 mt-2 text-sm text-muted-foreground">
-                            <span>Last check-in: {stats.lastCheckin}</span>
-                            <span>•</span>
-                            <span>{stats.totalMoodCheckins} mood entries</span>
+                          
+                          <div className="grid grid-cols-2 gap-4 mt-3">
+                            <div className="flex items-center gap-2">
+                              <div className="w-2 h-2 rounded-full bg-primary/40"></div>
+                              <span className="text-sm text-muted-foreground">
+                                Last check-in: <span className="font-medium text-foreground">{stats.lastCheckin}</span>
+                              </span>
+                            </div>
+                            <div className="flex items-center gap-2">
+                              <TrendingUp className="w-3 h-3 text-primary" />
+                              <span className="text-sm text-muted-foreground">
+                                <span className="font-semibold text-foreground">{stats.totalMoodCheckins}</span> mood entries
+                              </span>
+                            </div>
                           </div>
                         </div>
                       </div>
 
-                      <div className="flex items-center gap-3 ml-4">
-                        {stats.recentMood && <Badge variant="secondary" className={`${getMoodColor(stats.recentMood.mood_rating)} border-0`}>
-                            {stats.recentMood.mood_emoji} {stats.recentMood.mood_rating}/5
-                          </Badge>}
+                      <div className="flex flex-col items-end gap-2">
+                        {stats.recentMood && (
+                          <Badge variant="secondary" className={`${getMoodColor(stats.recentMood.mood_rating)} border-0 shadow-sm px-3 py-1`}>
+                            <span className="text-lg mr-1">{stats.recentMood.mood_emoji}</span>
+                            <span className="font-semibold">{stats.recentMood.mood_rating}/5</span>
+                          </Badge>
+                        )}
                         
-                        {stats.upcomingAppointments > 0 && <Badge variant="outline" className="text-blue-600 border-blue-200 dark:text-blue-400 dark:border-blue-800">
+                        {stats.upcomingAppointments > 0 && (
+                          <Badge variant="outline" className="text-blue-600 border-blue-200 dark:text-blue-400 dark:border-blue-800 shadow-sm">
                             <Calendar className="h-3 w-3 mr-1" />
                             {stats.upcomingAppointments} upcoming
-                          </Badge>}
+                          </Badge>
+                        )}
                       </div>
                     </div>
 
-                    <div className="flex items-center justify-between mt-4 pt-4 border-t">
-                      <div className="flex items-center gap-4 text-sm text-muted-foreground">
-                        <div className="flex items-center gap-1">
-                          
-                          
+                    <div className="flex items-center justify-between pt-4 border-t border-border/50">
+                      <div className="flex items-center gap-4">
+                        <div className="flex items-center gap-2 text-xs text-muted-foreground">
+                          <MessageCircle className="w-3 h-3" />
+                          <span>Messages available</span>
                         </div>
-                        
                       </div>
 
                       <div className="flex items-center gap-2">
-                        <Button variant="outline" size="sm" onClick={() => isManuallyAssigned(student.user_id) ? removeStudent(student.user_id) : addStudent(student.user_id)} disabled={isAddingStudent || isRemovingStudent}>
-                          {isManuallyAssigned(student.user_id) ? <>
+                        <Button 
+                          variant="outline" 
+                          size="sm" 
+                          onClick={() => isManuallyAssigned(student.user_id) ? removeStudent(student.user_id) : addStudent(student.user_id)} 
+                          disabled={isAddingStudent || isRemovingStudent}
+                          className="transition-all duration-200"
+                        >
+                          {isManuallyAssigned(student.user_id) ? (
+                            <>
                               <StarOff className="h-3 w-3 mr-1" />
                               Remove
-                            </> : <>
+                            </>
+                          ) : (
+                            <>
                               <Star className="h-3 w-3 mr-1" />
                               Add
-                            </>}
+                            </>
+                          )}
                         </Button>
-                        <Button variant="outline" size="sm" onClick={() => navigate(`/counselor/students/${student.user_id}`)}>
+                        <Button 
+                          variant="default" 
+                          size="sm" 
+                          onClick={() => navigate(`/counselor/students/${student.user_id}`)}
+                          className="bg-primary hover:bg-primary/90 shadow-sm"
+                        >
                           View Details
                         </Button>
                       </div>

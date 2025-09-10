@@ -82,6 +82,61 @@ const CalendarHeatmap = ({
     calendarWeeks.push(currentWeek);
   }
   const maxIssues = Math.max(...data.map(item => item.issueCount), 1);
-  return;
+  
+  return (
+    <Card>
+      <CardHeader>
+        <CardTitle className="text-lg font-semibold">{title}</CardTitle>
+      </CardHeader>
+      <CardContent className="space-y-4">
+        <div className="grid grid-cols-7 gap-1 text-xs text-muted-foreground mb-2">
+          <div>S</div>
+          <div>M</div>
+          <div>T</div>
+          <div>W</div>
+          <div>T</div>
+          <div>F</div>
+          <div>S</div>
+        </div>
+        
+        <div className="space-y-1">
+          {calendarWeeks.map((week, weekIndex) => (
+            <div key={weekIndex} className="grid grid-cols-7 gap-1">
+              {week.map((date, dayIndex) => {
+                if (!date) {
+                  return <div key={dayIndex} className="w-8 h-8" />;
+                }
+                
+                const heatmapData = getHeatmapData(date);
+                const issueLevel = heatmapData ? Math.min(Math.floor((heatmapData.issueCount / maxIssues) * 4), 4) : 0;
+                
+                return (
+                  <div
+                    key={dayIndex}
+                    className={getHeatClass(issueLevel)}
+                    title={`${format(date, 'MMM d')}: ${heatmapData?.issueCount || 0} issues`}
+                  >
+                    <span className="flex items-center justify-center h-full text-xs font-medium">
+                      {format(date, 'd')}
+                    </span>
+                  </div>
+                );
+              })}
+            </div>
+          ))}
+        </div>
+        
+        <div className="flex items-center justify-between text-xs text-muted-foreground mt-4">
+          <span>Less</span>
+          <div className="flex items-center gap-1">
+            {[0, 1, 2, 3, 4].map((level) => (
+              <div key={level} className={`w-3 h-3 rounded-sm ${getLegendClass(level)}`} />
+            ))}
+          </div>
+          <span>More</span>
+        </div>
+      </CardContent>
+    </Card>
+  );
 };
 export default CalendarHeatmap;
