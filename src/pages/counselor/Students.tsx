@@ -12,7 +12,6 @@ import { useStudents } from "../../hooks/useStudents";
 import { useMoodCheckins } from "../../hooks/useMoodCheckins";
 import { useAppointments } from "../../hooks/useAppointments";
 import { useAuth } from "../../contexts/AuthContext";
-import { useMyStudentsCounselors } from "../../hooks/useMyStudentsCounselors";
 import { useCounselorStudents } from "../../hooks/useCounselorStudents";
 
 const StudentList = () => {
@@ -21,7 +20,6 @@ const StudentList = () => {
   const { students, isLoading } = useStudents();
   const { moodCheckins } = useMoodCheckins();
   const { appointments } = useAppointments();
-  const { isMyStudent } = useMyStudentsCounselors();
   const { isManuallyAssigned, addStudent, removeStudent, isAddingStudent, isRemovingStudent } = useCounselorStudents();
   const [searchQuery, setSearchQuery] = useState("");
   const [studentFilter, setStudentFilter] = useState("all");
@@ -30,9 +28,9 @@ const StudentList = () => {
   const filteredStudents = students.filter(student => {
     const matchesSearch = student.full_name?.toLowerCase().includes(searchQuery.toLowerCase()) || false;
 
-    // Filter by student relationship
+    // Filter by student relationship - only use manual assignments
     const matchesStudentFilter = studentFilter === "all" || 
-      (studentFilter === "my-students" && isMyStudent(student.user_id));
+      (studentFilter === "my-students" && isManuallyAssigned(student.user_id));
     
     return matchesSearch && matchesStudentFilter;
   });
