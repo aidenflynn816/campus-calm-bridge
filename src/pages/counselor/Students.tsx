@@ -9,10 +9,10 @@ import { Badge } from "../../components/ui/badge";
 import { Avatar, AvatarFallback, AvatarImage } from "../../components/ui/avatar";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "../../components/ui/select";
 import { useStudents } from "../../hooks/useStudents";
-import { useMoodCheckins } from "../../hooks/useMoodCheckins";
 import { useAppointments } from "../../hooks/useAppointments";
 import { useAuth } from "../../contexts/AuthContext";
 import { useCounselorStudents } from "../../hooks/useCounselorStudents";
+import { useStudentsMoodData } from "../../hooks/useStudentsMoodData";
 const StudentList = () => {
   const navigate = useNavigate();
   const {
@@ -23,11 +23,11 @@ const StudentList = () => {
     isLoading
   } = useStudents();
   const {
-    moodCheckins
-  } = useMoodCheckins();
-  const {
     appointments
   } = useAppointments();
+  const {
+    studentsMoodData
+  } = useStudentsMoodData();
   const {
     isManuallyAssigned,
     addStudent,
@@ -47,13 +47,17 @@ const StudentList = () => {
     return matchesSearch && matchesStudentFilter;
   });
   const getStudentStats = (studentId: string) => {
-    const studentMoods = moodCheckins.filter(checkin => checkin.user_id === studentId);
+    // Get mood data for this specific student
+    const studentMoodData = studentsMoodData.find(data => data.user_id === studentId);
+    const studentMoods = studentMoodData?.mood_checkins || [];
+    
     const studentAppointments = appointments.filter(apt => apt.student_id === studentId);
-    const recentMood = studentMoods.sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime())[0];
+    const recentMood = studentMoods[0]; // Already sorted by created_at desc from the hook
     const upcomingAppointments = studentAppointments.filter(apt => {
       const aptDate = new Date(`${apt.date}T${apt.time}`);
       return aptDate > new Date() && (apt.status === 'confirmed' || apt.status === 'pending');
     }).length;
+    
     return {
       totalMoodCheckins: studentMoods.length,
       recentMood,
