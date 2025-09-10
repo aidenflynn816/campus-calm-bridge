@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { useParams, useNavigate } from "react-router-dom";
-import { ArrowLeft, MessageCircle, Calendar, TrendingUp, Shield, Clock, Star, StarOff } from "lucide-react";
+import { ArrowLeft, MessageCircle, Calendar, TrendingUp, Shield, Clock, Star, StarOff, Trash2 } from "lucide-react";
 import Layout from "../../components/Layout";
 import { Card, CardContent, CardHeader, CardTitle } from "../../components/ui/card";
 import { Button } from "../../components/ui/button";
@@ -8,6 +8,7 @@ import { Badge } from "../../components/ui/badge";
 import { Avatar, AvatarFallback, AvatarImage } from "../../components/ui/avatar";
 import { Textarea } from "../../components/ui/textarea";
 import { Alert, AlertDescription } from "../../components/ui/alert";
+import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from "../../components/ui/alert-dialog";
 import { useStudents } from "../../hooks/useStudents";
 import { useMoodCheckins } from "../../hooks/useMoodCheckins";
 import { useAppointments } from "../../hooks/useAppointments";
@@ -15,6 +16,8 @@ import { useDataSharingRequests } from "../../hooks/useDataSharingRequests";
 import { useCounselorStudents } from "../../hooks/useCounselorStudents";
 import MoodChart from "../../components/MoodChart";
 import { useToast } from "../../hooks/use-toast";
+import { supabase } from "../../integrations/supabase/client";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
 const StudentDetail = () => {
   const {
     studentId
@@ -25,6 +28,7 @@ const StudentDetail = () => {
   const {
     toast
   } = useToast();
+  const queryClient = useQueryClient();
   const {
     students
   } = useStudents();
@@ -49,6 +53,48 @@ const StudentDetail = () => {
   } = useCounselorStudents();
   const [requestMessage, setRequestMessage] = useState("");
   const [showRequestForm, setShowRequestForm] = useState(false);
+
+  // Mutation for deleting student account
+  const deleteStudentMutation = useMutation({
+    mutationFn: async (studentId: string) => {
+      const {
+        data,
+        error
+      } = await supabase.functions.invoke('delete-student-account', {
+        body: {
+          studentId
+        }
+      });
+      if (error) throw error;
+      return data;
+    },
+    onSuccess: (data, studentId) => {
+      // Refresh the students list
+      queryClient.invalidateQueries({
+        queryKey: ['students']
+      });
+      queryClient.invalidateQueries({
+        queryKey: ['counselor-students']
+      });
+      queryClient.invalidateQueries({
+        queryKey: ['students-mood-data']
+      });
+      toast({
+        title: "Student account deleted",
+        description: data.message || "The student account has been successfully removed."
+      });
+      // Navigate back to students list
+      navigate('/counselor/students');
+    },
+    onError: (error: any) => {
+      console.error('Error deleting student:', error);
+      toast({
+        title: "Error",
+        description: error.message || "Failed to delete student account. Please try again.",
+        variant: "destructive"
+      });
+    }
+  });
   const student = students.find(s => s.user_id === studentId);
   const existingRequest = studentId ? getRequestByStudentId(studentId) : null;
 
@@ -178,7 +224,28 @@ const StudentDetail = () => {
                     </>}
                 </Button>
                 
-                
+                <AlertDialog>
+                  <AlertDialogTrigger asChild>
+                    <Button variant="outline" size="sm" className="text-destructive hover:text-destructive hover:bg-destructive/10 border-destructive/20 hover:border-destructive/30">
+                      <Trash2 className="h-4 w-4 mr-1" />
+                      Delete Account
+                    </Button>
+                  </AlertDialogTrigger>
+                  <AlertDialogContent>
+                    <AlertDialogHeader>
+                      <AlertDialogTitle>Delete Student Account</AlertDialogTitle>
+                      <AlertDialogDescription>
+                        Are you sure you want to permanently delete {student.full_name}'s account? This action cannot be undone and will remove all their data including mood check-ins, appointments, and messages.
+                      </AlertDialogDescription>
+                    </AlertDialogHeader>
+                    <AlertDialogFooter>
+                      <AlertDialogCancel>Cancel</AlertDialogCancel>
+                      <AlertDialogAction onClick={() => studentId && deleteStudentMutation.mutate(studentId)} disabled={deleteStudentMutation.isPending} className="bg-destructive text-destructive-foreground hover:bg-destructive/90">
+                        {deleteStudentMutation.isPending ? "Deleting..." : "Delete Account"}
+                      </AlertDialogAction>
+                    </AlertDialogFooter>
+                  </AlertDialogContent>
+                </AlertDialog>
               </div>
             </div>
           </CardContent>
