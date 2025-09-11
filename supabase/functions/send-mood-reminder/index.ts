@@ -48,13 +48,24 @@ serve(async (req) => {
 
     console.log(`Found ${students.length} students to notify`);
 
-    // Check if users have already done their mood check-in today
-    const today = new Date().toISOString().split('T')[0]; // YYYY-MM-DD format
+    // Check if users have already done their mood check-in today (Eastern Time)
+    // Convert current UTC time to Eastern time for date calculation
+    const easternTime = new Date();
+    easternTime.setUTCHours(easternTime.getUTCHours() - 5); // EST/EDT approximation
+    const easternDate = easternTime.toISOString().split('T')[0]; // YYYY-MM-DD format
+    
+    console.log(`Checking for mood check-ins on Eastern date: ${easternDate}`);
+    
+    // Calculate next day for the range
+    const nextDay = new Date(easternDate);
+    nextDay.setDate(nextDay.getDate() + 1);
+    const nextEasternDate = nextDay.toISOString().split('T')[0];
+    
     const { data: todayCheckins, error: checkinsError } = await supabaseAdmin
       .from("mood_check_ins")
-      .select("user_id")
-      .gte("created_at", `${today}T00:00:00.000Z`)
-      .lt("created_at", `${today}T23:59:59.999Z`);
+      .select("user_id, created_at")
+      .gte("created_at", `${easternDate}T05:00:00.000Z`) // 5 AM UTC = 12 AM Eastern
+      .lt("created_at", `${nextEasternDate}T05:00:00.000Z`);  // Next day 5 AM UTC
 
     if (checkinsError) {
       console.error("Error fetching today's check-ins:", checkinsError);
@@ -89,7 +100,7 @@ serve(async (req) => {
           .select("sent_at")
           .eq("recipient_email", userEmail)
           .eq("type", "mood_reminder")
-          .gte("created_at", `${today}T00:00:00.000Z`)
+          .gte("created_at", `${easternDate}T05:00:00.000Z`)
           .limit(1);
 
         if (recentNotifications && recentNotifications.length > 0) {
