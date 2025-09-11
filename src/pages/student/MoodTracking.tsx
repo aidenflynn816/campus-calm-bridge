@@ -13,6 +13,7 @@ import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, 
 import { useMoodCheckins, MOOD_OPTIONS, DAILY_ISSUES, type CreateMoodCheckinData } from "@/hooks/useMoodCheckins";
 import MoodChart from "@/components/MoodChart";
 import IssuesChart from "@/components/IssuesChart";
+import MoodReminderSettings from "@/components/MoodReminderSettings";
 
 const MoodTracking = () => {
   const [selectedMood, setSelectedMood] = useState<number | null>(null);
@@ -350,6 +351,7 @@ const MoodTracking = () => {
             <TabsTrigger value="trend">Mood Trend</TabsTrigger>
             <TabsTrigger value="issues">Issues Frequency</TabsTrigger>
             <TabsTrigger value="history">History Log</TabsTrigger>
+            <TabsTrigger value="settings">Settings</TabsTrigger>
           </TabsList>
           
           <TabsContent value="trend">
@@ -557,6 +559,23 @@ const MoodTracking = () => {
                     ))}
                   </div>
                 )}
+              </CardContent>
+            </Card>
+          </TabsContent>
+
+          <TabsContent value="settings">
+            <Card className="bridge-card">
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                  <Clock size={20} />
+                  Notification Settings
+                </CardTitle>
+                <p className="text-sm text-bridge-text/70">
+                  Customize your mood tracking notifications
+                </p>
+              </CardHeader>
+              <CardContent>
+                <MoodReminderSettings />
               </CardContent>
             </Card>
           </TabsContent>

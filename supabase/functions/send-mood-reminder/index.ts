@@ -23,11 +23,12 @@ serve(async (req) => {
   try {
     console.log("Starting mood check-in reminder process...");
 
-    // Get all student profiles with their user emails
+    // Get all student profiles with their user emails (only those with reminders enabled)
     const { data: students, error: studentsError } = await supabaseAdmin
       .from("profiles")
-      .select("user_id, full_name")
-      .eq("role", "student");
+      .select("user_id, full_name, mood_reminder_enabled")
+      .eq("role", "student")
+      .eq("mood_reminder_enabled", true);
 
     if (studentsError) {
       console.error("Error fetching students:", studentsError);
