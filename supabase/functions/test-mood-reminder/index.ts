@@ -46,7 +46,7 @@ serve(async (req) => {
           <li>Build self-awareness and mindfulness</li>
         </ul>
         <p style="margin-top: 24px;">
-          <a href="https://bridgewellness.app/student/mood-tracking" target="_blank" rel="noopener noreferrer"
+          <a href="https://rjspahcbxchzgbexiqah.lovableproject.com/student/mood-tracking" target="_blank" rel="noopener noreferrer"
              style="display:inline-block;padding:12px 24px;background:#0ea5e9;color:#fff;text-decoration:none;border-radius:8px;font-weight:bold;">
             Complete Your Mood Check-in
           </a>

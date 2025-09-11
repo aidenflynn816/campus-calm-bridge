@@ -110,12 +110,12 @@ serve(async (req) => {
               <li>Share insights with your counselor (if you choose to)</li>
               <li>Build self-awareness and mindfulness</li>
             </ul>
-            <p style="margin-top: 24px;">
-              <a href="https://bridgewellness.app/student/mood-tracking" target="_blank" rel="noopener noreferrer"
-                 style="display:inline-block;padding:12px 24px;background:#0ea5e9;color:#fff;text-decoration:none;border-radius:8px;font-weight:bold;">
-                Complete Your Mood Check-in
-              </a>
-            </p>
+        <p style="margin-top: 24px;">
+          <a href="https://rjspahcbxchzgbexiqah.lovableproject.com/student/mood-tracking" target="_blank" rel="noopener noreferrer"
+             style="display:inline-block;padding:12px 24px;background:#0ea5e9;color:#fff;text-decoration:none;border-radius:8px;font-weight:bold;">
+            Complete Your Mood Check-in
+          </a>
+        </p>
             <p style="font-size: 14px; color: #666; margin-top: 32px;">
               This reminder is sent daily at 9:30 PM Eastern. You can adjust your notification preferences in the Bridge app.
             </p>
