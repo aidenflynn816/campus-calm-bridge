@@ -260,7 +260,7 @@ const StudentDetail = () => {
               </CardTitle>
             </CardHeader>
             <CardContent>
-              {!existingRequest && <div className="space-y-4">
+              {(!existingRequest || existingRequest.status === 'denied') && <div className="space-y-4">
                   <Alert>
                     <Shield className="h-4 w-4" />
                     <AlertDescription>
@@ -270,7 +270,7 @@ const StudentDetail = () => {
                   </Alert>
                   
                   {!showRequestForm ? <Button onClick={() => setShowRequestForm(true)}>
-                      Request Mood Data Access
+                      {existingRequest?.status === 'denied' ? 'Request Again' : 'Request Mood Data Access'}
                     </Button> : <div className="space-y-4">
                       <Textarea placeholder="Optional: Add a message explaining why you need access to their mood data..." value={requestMessage} onChange={e => setRequestMessage(e.target.value)} />
                       <div className="flex gap-2">
