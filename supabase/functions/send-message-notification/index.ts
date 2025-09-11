@@ -63,14 +63,16 @@ serve(async (req) => {
 
     const recipientEmail = recipientUserData.user.email as string;
 
-    // Check if we sent an email to this recipient recently (within 3 minutes)
-    const threeMinutesAgo = new Date(Date.now() - 3 * 60 * 1000).toISOString();
+    // Check if we sent an email for this conversation recently (within 60 seconds)
+    const threadKey = `${sender_id}-${recipient_id}`;
+    const oneMinuteAgo = new Date(Date.now() - 60 * 1000).toISOString();
     const { data: recentEmails, error: recentEmailsError } = await supabaseAdmin
       .from("email_notifications")
       .select("sent_at")
       .eq("recipient_email", recipientEmail)
       .eq("type", "message")
-      .gte("sent_at", threeMinutesAgo)
+      .eq("thread_key", threadKey)
+      .gte("sent_at", oneMinuteAgo)
       .order("sent_at", { ascending: false })
       .limit(1);
 
