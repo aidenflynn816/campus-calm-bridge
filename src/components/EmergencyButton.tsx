@@ -129,7 +129,37 @@ export function EmergencyButton() {
                   variant="secondary"
                 >
                   <div className="flex flex-col items-center gap-1">
-                    <span>Health Center (After Hours)</span>
+                    <span>On-Call Counselor (After Hours)</span>
+                    <span className="text-sm opacity-90">{healthCenterNumber}</span>
+                  </div>
+                </Button>
+              </AlertDialogTrigger>
+              <AlertDialogContent>
+                <AlertDialogHeader>
+                  <AlertDialogTitle>Call On-Call Counselor</AlertDialogTitle>
+                  <AlertDialogDescription>
+                    This will initiate a call to {healthCenterNumber}.
+                  </AlertDialogDescription>
+                </AlertDialogHeader>
+                <AlertDialogFooter>
+                  <AlertDialogCancel>Cancel</AlertDialogCancel>
+                  <AlertDialogAction
+                    onClick={() => handleEmergencyCall(healthCenterNumber)}
+                  >
+                    Yes, Call Now
+                  </AlertDialogAction>
+                </AlertDialogFooter>
+              </AlertDialogContent>
+            </AlertDialog>
+
+            <AlertDialog>
+              <AlertDialogTrigger asChild>
+                <Button
+                  className="w-full py-6 text-lg"
+                  variant="secondary"
+                >
+                  <div className="flex flex-col items-center gap-1">
+                    <span>Health Center</span>
                     <span className="text-sm opacity-90">{healthCenterNumber}</span>
                   </div>
                 </Button>
