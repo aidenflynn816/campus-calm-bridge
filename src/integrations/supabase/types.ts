@@ -400,6 +400,14 @@ export type Database = {
         Args: Record<PropertyKey, never>
         Returns: string
       }
+      get_user_google_token_secure: {
+        Args: { target_user_id: string }
+        Returns: {
+          access_token: string
+          calendar_id: string
+          refresh_token: string
+        }[]
+      }
     }
     Enums: {
       [_ in never]: never
