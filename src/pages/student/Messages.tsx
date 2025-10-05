@@ -158,9 +158,9 @@ const Messages = () => {
                           {counselor.avatar_url ? (
                             <AvatarImage src={counselor.avatar_url} alt={counselor.full_name} />
                           ) : (
-                            <AvatarFallback className="bg-gradient-to-br from-bridge-primary to-bridge-secondary text-white font-semibold">
-                              {counselor.full_name.split(' ').map(n => n[0]).join('')}
-                            </AvatarFallback>
+                          <AvatarFallback className="bg-bridge-primary text-white font-semibold">
+                            {counselor.full_name.split(' ').map(n => n[0]).join('')}
+                          </AvatarFallback>
                           )}
                         </Avatar>
                         <div className="flex-1">
@@ -200,9 +200,9 @@ const Messages = () => {
                         {selectedCounselor?.avatar_url ? (
                           <AvatarImage src={selectedCounselor.avatar_url} alt={selectedCounselor.full_name} />
                         ) : (
-                          <AvatarFallback className="bg-gradient-to-br from-bridge-primary to-bridge-secondary text-white font-semibold">
-                            {selectedCounselor?.full_name.split(' ').map(n => n[0]).join('')}
-                          </AvatarFallback>
+                        <AvatarFallback className="bg-bridge-primary text-white font-semibold">
+                          {selectedCounselor?.full_name.split(' ').map(n => n[0]).join('')}
+                        </AvatarFallback>
                         )}
                       </Avatar>
                       <div>
@@ -253,7 +253,7 @@ const Messages = () => {
                               <div className={`flex max-w-[75%] ${isCurrentUser ? "flex-row-reverse" : ""}`}>
                                 {showAvatar && (
                                   <Avatar className="h-8 w-8 mr-2 border border-bridge-muted/30">
-                                    <AvatarFallback className="bg-gradient-to-br from-bridge-primary to-bridge-secondary text-white text-sm">
+                                    <AvatarFallback className="bg-bridge-primary text-white text-sm">
                                       {selectedCounselor?.full_name.split(' ').map(n => n[0]).join('')}
                                     </AvatarFallback>
                                   </Avatar>
@@ -262,7 +262,7 @@ const Messages = () => {
                                   <div
                                     className={`rounded-2xl px-4 py-3 shadow-sm ${
                                       isCurrentUser
-                                        ? "bg-gradient-to-r from-bridge-primary to-bridge-secondary text-white"
+                                        ? "bg-bridge-primary text-white"
                                         : "bg-white border border-bridge-muted/30 text-bridge-text"
                                     }`}
                                   >
