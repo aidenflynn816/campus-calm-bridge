@@ -27,9 +27,10 @@ export function EmergencyButton() {
   const { user } = useAuth();
   const [emergencyContact, setEmergencyContact] = useState(user?.emergency_contact || "");
   
-  // National Suicide Prevention Lifeline
+  // Emergency numbers
   const suicidePreventionNumber = "988";
-  const counselingOfficeNumber = "1-800-123-4567"; // This should come from env or database
+  const onCallCounselorNumber = "978-448-7579";
+  const healthCenterNumber = "978-448-7666";
   
   const handleEmergencyCall = (phoneNumber: string) => {
     window.location.href = `tel:${phoneNumber}`;
@@ -67,14 +68,17 @@ export function EmergencyButton() {
                   className="w-full py-6 text-lg"
                   variant="destructive"
                 >
-                  Call National Suicide Prevention Lifeline
+                  <div className="flex flex-col items-center gap-1">
+                    <span>National Suicide Prevention Lifeline</span>
+                    <span className="text-sm opacity-90">{suicidePreventionNumber}</span>
+                  </div>
                 </Button>
               </AlertDialogTrigger>
               <AlertDialogContent>
                 <AlertDialogHeader>
                   <AlertDialogTitle>National Suicide Prevention Lifeline</AlertDialogTitle>
                   <AlertDialogDescription>
-                    This will initiate a call to the National Suicide Prevention Lifeline.
+                    This will initiate a call to {suicidePreventionNumber}.
                   </AlertDialogDescription>
                 </AlertDialogHeader>
                 <AlertDialogFooter>
@@ -94,20 +98,53 @@ export function EmergencyButton() {
                   className="w-full py-6 text-lg"
                   variant="secondary"
                 >
-                  Call on-call counselor
+                  <div className="flex flex-col items-center gap-1">
+                    <span>On-Call Counselor (During Hours)</span>
+                    <span className="text-sm opacity-90">{onCallCounselorNumber}</span>
+                  </div>
                 </Button>
               </AlertDialogTrigger>
               <AlertDialogContent>
                 <AlertDialogHeader>
-                  <AlertDialogTitle>Call on-call counselor</AlertDialogTitle>
+                  <AlertDialogTitle>Call On-Call Counselor</AlertDialogTitle>
                   <AlertDialogDescription>
-                    This will initiate a call to the on-call counselor emergency number.
+                    This will initiate a call to {onCallCounselorNumber}.
                   </AlertDialogDescription>
                 </AlertDialogHeader>
                 <AlertDialogFooter>
                   <AlertDialogCancel>Cancel</AlertDialogCancel>
                   <AlertDialogAction
-                    onClick={() => handleEmergencyCall(counselingOfficeNumber)}
+                    onClick={() => handleEmergencyCall(onCallCounselorNumber)}
+                  >
+                    Yes, Call Now
+                  </AlertDialogAction>
+                </AlertDialogFooter>
+              </AlertDialogContent>
+            </AlertDialog>
+
+            <AlertDialog>
+              <AlertDialogTrigger asChild>
+                <Button
+                  className="w-full py-6 text-lg"
+                  variant="secondary"
+                >
+                  <div className="flex flex-col items-center gap-1">
+                    <span>Health Center (After Hours)</span>
+                    <span className="text-sm opacity-90">{healthCenterNumber}</span>
+                  </div>
+                </Button>
+              </AlertDialogTrigger>
+              <AlertDialogContent>
+                <AlertDialogHeader>
+                  <AlertDialogTitle>Call Health Center</AlertDialogTitle>
+                  <AlertDialogDescription>
+                    This will initiate a call to {healthCenterNumber}.
+                  </AlertDialogDescription>
+                </AlertDialogHeader>
+                <AlertDialogFooter>
+                  <AlertDialogCancel>Cancel</AlertDialogCancel>
+                  <AlertDialogAction
+                    onClick={() => handleEmergencyCall(healthCenterNumber)}
                   >
                     Yes, Call Now
                   </AlertDialogAction>
