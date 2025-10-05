@@ -159,7 +159,7 @@ export type Database = {
           created_at: string
           id: string
           recipient_email: string
-          recipient_id: string | null
+          recipient_id: string
           sender_name: string | null
           sent_at: string | null
           thread_key: string | null
@@ -169,7 +169,7 @@ export type Database = {
           created_at?: string
           id?: string
           recipient_email: string
-          recipient_id?: string | null
+          recipient_id: string
           sender_name?: string | null
           sent_at?: string | null
           thread_key?: string | null
@@ -179,7 +179,7 @@ export type Database = {
           created_at?: string
           id?: string
           recipient_email?: string
-          recipient_id?: string | null
+          recipient_id?: string
           sender_name?: string | null
           sent_at?: string | null
           thread_key?: string | null
