@@ -52,21 +52,23 @@ const StudentDashboard = () => {
         <DataSharingNotifications />
       </div>
 
-      <div className="mb-8">
-        <h1 className="text-3xl font-bold text-bridge-primary">
-          Welcome, {user?.full_name?.split(" ")[0] || "Student"}
+      <div className="mb-8 pb-6 border-b border-border">
+        <h1 className="text-4xl font-bold text-primary tracking-tight">
+          Welcome back, {user?.full_name?.split(" ")[0] || "Student"}
         </h1>
-        <p className="text-lg text-bridge-text/70 mt-1">
+        <p className="text-base text-muted-foreground mt-2">
           How are you feeling today?
         </p>
       </div>
       
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 animate-fade-in">
         {/* Daily Check-in */}
-        <Card className="bridge-card">
-          <CardHeader className="pb-2">
-            <CardTitle className="flex items-center space-x-2">
-              <SmilePlus className="h-5 w-5 text-bridge-primary" />
+        <Card className="border shadow-sm hover:shadow-md transition-all duration-300">
+          <CardHeader className="pb-3">
+            <CardTitle className="flex items-center gap-2 text-lg">
+              <div className="p-2 bg-primary/10 rounded-lg">
+                <SmilePlus className="h-5 w-5 text-primary" />
+              </div>
               <span>Daily Mood Check-in</span>
             </CardTitle>
           </CardHeader>
@@ -124,33 +126,37 @@ const StudentDashboard = () => {
         </Card>
         
         {/* Unread Messages */}
-        <Card className="bridge-card cursor-pointer hover:shadow-lg transition-shadow" onClick={() => window.location.href = '/student/messages'}>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Messages</CardTitle>
-            <MessageSquare className="h-4 w-4 text-blue-500" />
+        <Card className="border shadow-sm hover:shadow-md transition-all duration-300 cursor-pointer group border-l-4 border-l-blue-500" onClick={() => window.location.href = '/student/messages'}>
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-3">
+            <CardTitle className="text-sm font-semibold text-muted-foreground">Messages</CardTitle>
+            <div className="p-2 bg-blue-100 rounded-lg group-hover:bg-blue-200 transition-colors">
+              <MessageSquare className="h-5 w-5 text-blue-600" />
+            </div>
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold text-bridge-primary mb-2">
+            <div className="text-3xl font-bold text-primary mb-2">
               {unreadCount}
             </div>
             {unreadCount > 0 ? (
               <div className="flex items-center gap-2">
-                <Badge variant="destructive" className="text-xs">
+                <Badge variant="destructive" className="text-xs font-medium">
                   Unread
                 </Badge>
-                <ArrowRight className="h-4 w-4 text-bridge-text/70" />
+                <ArrowRight className="h-4 w-4 text-muted-foreground group-hover:translate-x-1 transition-transform" />
               </div>
             ) : (
-              <p className="text-sm text-bridge-text/70">All caught up!</p>
+              <p className="text-sm text-muted-foreground font-medium">All caught up!</p>
             )}
           </CardContent>
         </Card>
 
         {/* Recommended Resources */}
-        <Card className="bridge-card">
-          <CardHeader className="pb-2">
-            <CardTitle className="flex items-center space-x-2">
-              <BookOpen className="h-5 w-5 text-bridge-primary" />
+        <Card className="border shadow-sm hover:shadow-md transition-all duration-300">
+          <CardHeader className="pb-3">
+            <CardTitle className="flex items-center gap-2 text-lg">
+              <div className="p-2 bg-primary/10 rounded-lg">
+                <BookOpen className="h-5 w-5 text-primary" />
+              </div>
               <span>Recommended Resources</span>
             </CardTitle>
           </CardHeader>

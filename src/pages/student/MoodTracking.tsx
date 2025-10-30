@@ -110,19 +110,21 @@ const MoodTracking = () => {
 
   return (
     <Layout>
-      <div className="space-y-6">
-        <div className="mb-6">
-          <h1 className="text-3xl font-bold text-bridge-primary">Mood Check-in</h1>
-          <p className="text-lg text-bridge-text/70 mt-1">
+      <div className="space-y-8 animate-fade-in">
+        <div className="pb-6 border-b border-border">
+          <h1 className="text-4xl font-bold text-primary tracking-tight">Mood Check-in</h1>
+          <p className="text-base text-muted-foreground mt-2">
             Track your daily mood and reflect on your feelings
           </p>
         </div>
 
         {/* Today's Check-in */}
-        <Card className="bridge-card">
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <Calendar size={20} />
+        <Card className="border shadow-sm hover:shadow-md transition-shadow duration-300">
+          <CardHeader className="pb-4">
+            <CardTitle className="flex items-center gap-3 text-xl">
+              <div className="p-2 bg-primary/10 rounded-lg">
+                <Calendar size={22} className="text-primary" />
+              </div>
               {todayCheckin ? "Today's Mood" : "How are you feeling today?"}
             </CardTitle>
             {todayCheckin && (
@@ -346,8 +348,8 @@ const MoodTracking = () => {
         </Card>
 
         {/* Tabs for Trend and History */}
-        <Tabs defaultValue="trend" className="space-y-4">
-          <TabsList className="bg-bridge-muted/30">
+        <Tabs defaultValue="trend" className="space-y-6">
+          <TabsList className="bg-muted/50 p-1 h-auto rounded-xl shadow-sm">
             <TabsTrigger value="trend">Mood Trend</TabsTrigger>
             <TabsTrigger value="issues">Issues Frequency</TabsTrigger>
             <TabsTrigger value="history">History Log</TabsTrigger>
@@ -363,10 +365,10 @@ const MoodTracking = () => {
           </TabsContent>
           
           <TabsContent value="history">
-            <Card className="bridge-card">
-              <CardHeader>
-                <CardTitle>Mood History</CardTitle>
-                <p className="text-sm text-bridge-text/70">
+            <Card className="border shadow-sm">
+              <CardHeader className="pb-4">
+                <CardTitle className="text-xl">Mood History</CardTitle>
+                <p className="text-sm text-muted-foreground">
                   Your complete mood check-in log
                 </p>
               </CardHeader>

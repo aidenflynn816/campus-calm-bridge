@@ -91,22 +91,22 @@ const StudentList = () => {
       </Layout>;
   }
   return <Layout>
-      <div className="space-y-6">
-        <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+      <div className="space-y-8 animate-fade-in">
+        <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 pb-6 border-b border-border">
           <div>
-            <h1 className="text-3xl font-bold text-primary">My Students</h1>
-            <p className="text-muted-foreground mt-1">
+            <h1 className="text-4xl font-bold text-primary tracking-tight">My Students</h1>
+            <p className="text-base text-muted-foreground mt-2">
               Monitor and support your assigned students
             </p>
           </div>
-          <Badge variant="secondary" className="text-sm">
+          <Badge variant="secondary" className="text-sm font-semibold px-4 py-2 bg-primary/10 text-primary border-primary/20">
             {filteredStudents.length} students
           </Badge>
         </div>
 
         {/* Search and Filters */}
-        <Card>
-          <CardContent className="p-4">
+        <Card className="border shadow-sm">
+          <CardContent className="p-6">
             <div className="flex flex-col sm:flex-row gap-4">
               <div className="relative flex-1">
                 <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
@@ -138,7 +138,7 @@ const StudentList = () => {
               </CardContent>
             </Card> : filteredStudents.map(student => {
           const stats = getStudentStats(student.user_id);
-          return <Card key={student.id} className="hover:shadow-lg transition-all duration-200 border-0 bg-gradient-to-r from-card to-card/80">
+          return <Card key={student.id} className="border shadow-sm hover:shadow-lg transition-all duration-300 group">
                   <CardContent className="p-6">
                     <div className="flex items-start justify-between mb-4">
                       <div className="flex items-center space-x-4 flex-1">
