@@ -75,15 +75,15 @@ const Resources = () => {
   
   return (
     <Layout>
-      <div className="mb-8 pb-6 border-b border-border animate-fade-in">
-        <h1 className="text-4xl font-bold text-primary tracking-tight">Resources Library</h1>
-        <p className="text-base text-muted-foreground mt-2">
+      <div className="mb-8">
+        <h1 className="text-3xl font-bold text-bridge-primary">Resources Library</h1>
+        <p className="text-lg text-bridge-text/70 mt-1">
           Browse wellness resources and guides
         </p>
       </div>
       
       {/* Search and filters */}
-      <Card className="border shadow-sm mb-8">
+      <Card className="bridge-card mb-8">
         <CardContent className="pt-6">
           <div className="flex flex-wrap gap-4">
             <div className="relative flex-1">
@@ -126,10 +126,10 @@ const Resources = () => {
       {/* Featured resources */}
       {searchQuery === "" && selectedTags.length === 0 && (
         <div className="mb-8">
-          <h2 className="text-2xl font-bold mb-6">Featured Resources</h2>
+          <h2 className="text-xl font-bold mb-4">Featured Resources</h2>
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
             {featuredResources.map((resource) => (
-              <Card key={resource.id} className="border shadow-sm hover:shadow-lg transition-all duration-300 group cursor-pointer">
+              <Card key={resource.id} className="bridge-card hover:shadow-medium transition-shadow">
                 <CardContent className="p-5">
                   <div className="flex items-center space-x-2 mb-2 text-bridge-primary">
                     {typeIcons[resource.type as keyof typeof typeIcons]}
@@ -153,7 +153,7 @@ const Resources = () => {
       
       {/* All resources */}
       <Tabs defaultValue="all">
-        <TabsList className="mb-6 bg-muted/50 p-1 h-auto rounded-xl shadow-sm">
+        <TabsList className="mb-6 bg-bridge-muted/30">
           <TabsTrigger value="all">All ({filteredResources.length})</TabsTrigger>
           <TabsTrigger value="articles">Articles ({articles.length})</TabsTrigger>
           <TabsTrigger value="pdfs">PDF Guides ({pdfs.length})</TabsTrigger>

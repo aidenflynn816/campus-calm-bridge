@@ -68,11 +68,11 @@ const CounselorResources = () => {
 
   return (
     <Layout>
-      <div className="mb-8 animate-fade-in">
-        <div className="flex items-center justify-between pb-6 border-b border-border">
+      <div className="mb-6">
+        <div className="flex items-center justify-between">
           <div>
-            <h1 className="text-4xl font-bold text-primary tracking-tight">Resources</h1>
-            <p className="text-base text-muted-foreground mt-2">
+            <h1 className="text-3xl font-bold text-bridge-primary">Resources</h1>
+            <p className="text-lg text-bridge-text/70 mt-1">
               Manage wellness resources for students
             </p>
           </div>
@@ -95,13 +95,11 @@ const CounselorResources = () => {
       </div>
 
       {counselorResources.length === 0 ? (
-        <Card className="border shadow-sm">
-          <CardContent className="text-center py-16">
-            <div className="p-4 bg-primary/10 rounded-full w-20 h-20 mx-auto mb-6 flex items-center justify-center">
-              <BookOpen size={32} className="text-primary" />
-            </div>
-            <h3 className="text-xl font-semibold mb-2">No resources yet</h3>
-            <p className="text-muted-foreground mb-6 max-w-md mx-auto">
+        <Card className="bridge-card">
+          <CardContent className="text-center py-12">
+            <BookOpen size={48} className="mx-auto mb-4 text-bridge-text/30" />
+            <h3 className="text-lg font-medium mb-2">No resources yet</h3>
+            <p className="text-bridge-text/70 mb-4">
               Create your first resource to help students with wellness and mental health topics.
             </p>
             <Dialog open={isCreateDialogOpen} onOpenChange={setIsCreateDialogOpen}>
@@ -117,7 +115,7 @@ const CounselorResources = () => {
       ) : (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
           {counselorResources.map((resource) => (
-            <Card key={resource.id} className="border shadow-sm hover:shadow-lg transition-all duration-300 group">
+            <Card key={resource.id} className="bridge-card hover:shadow-medium transition-shadow">
               <CardContent className="p-5">
                 <div className="flex items-center justify-between mb-3">
                   <div className="flex items-center space-x-2 text-bridge-primary">
