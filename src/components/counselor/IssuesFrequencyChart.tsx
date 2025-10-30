@@ -65,35 +65,38 @@ const IssuesFrequencyChart = ({ data, title = "Issues Frequency Analysis", onDri
   }
 
   return (
-    <Card className="bridge-card">
-      <CardHeader>
-        <CardTitle className="flex items-center justify-between">
-          {title}
-          <div className="flex gap-2">
+    <Card className="border shadow-sm hover:shadow-md transition-shadow duration-300">
+      <CardHeader className="space-y-3 pb-4">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+          <CardTitle className="text-xl font-bold">{title}</CardTitle>
+          <div className="inline-flex gap-1 p-1 bg-muted/50 rounded-lg">
             <Button
-              variant={selectedPeriod === 'today' ? 'default' : 'outline'}
+              variant={selectedPeriod === 'today' ? 'default' : 'ghost'}
               size="sm"
               onClick={() => setSelectedPeriod('today')}
+              className="rounded-md font-medium"
             >
               Today
             </Button>
             <Button
-              variant={selectedPeriod === 'past7Days' ? 'default' : 'outline'}
+              variant={selectedPeriod === 'past7Days' ? 'default' : 'ghost'}
               size="sm"
               onClick={() => setSelectedPeriod('past7Days')}
+              className="rounded-md font-medium"
             >
               7 Days
             </Button>
             <Button
-              variant={selectedPeriod === 'past30Days' ? 'default' : 'outline'}
+              variant={selectedPeriod === 'past30Days' ? 'default' : 'ghost'}
               size="sm"
               onClick={() => setSelectedPeriod('past30Days')}
+              className="rounded-md font-medium"
             >
               30 Days
             </Button>
           </div>
-        </CardTitle>
-        <p className="text-sm text-bridge-text/70">
+        </div>
+        <p className="text-sm text-muted-foreground">
           Frequency of issues reported across all students
         </p>
       </CardHeader>
@@ -160,25 +163,25 @@ const IssuesFrequencyChart = ({ data, title = "Issues Frequency Analysis", onDri
         </div>
 
         {/* Summary Stats */}
-        <div className="mt-6 pt-4 border-t border-border">
-          <div className="grid grid-cols-3 gap-4 text-center">
-            <div>
-              <p className="text-2xl font-bold text-blue-600">
+        <div className="mt-6 pt-6 border-t border-border bg-muted/30 -mx-6 px-6 -mb-6 pb-6 rounded-b-lg">
+          <div className="grid grid-cols-3 gap-6">
+            <div className="text-center space-y-1">
+              <p className="text-3xl font-bold text-blue-600">
                 {data.reduce((sum, item) => sum + item.today, 0)}
               </p>
-              <p className="text-sm text-bridge-text/70">Today</p>
+              <p className="text-sm font-medium text-muted-foreground">Today</p>
             </div>
-            <div>
-              <p className="text-2xl font-bold text-green-600">
+            <div className="text-center space-y-1 border-x border-border">
+              <p className="text-3xl font-bold text-green-600">
                 {data.reduce((sum, item) => sum + item.past7Days, 0)}
               </p>
-              <p className="text-sm text-bridge-text/70">Past 7 Days</p>
+              <p className="text-sm font-medium text-muted-foreground">Past 7 Days</p>
             </div>
-            <div>
-              <p className="text-2xl font-bold text-purple-600">
+            <div className="text-center space-y-1">
+              <p className="text-3xl font-bold text-purple-600">
                 {data.reduce((sum, item) => sum + item.past30Days, 0)}
               </p>
-              <p className="text-sm text-bridge-text/70">Past 30 Days</p>
+              <p className="text-sm font-medium text-muted-foreground">Past 30 Days</p>
             </div>
           </div>
         </div>

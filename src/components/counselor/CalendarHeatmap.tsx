@@ -21,36 +21,36 @@ const CalendarHeatmap = ({
     return data.find(item => item.date === dateString);
   };
   const getHeatClass = (level: number) => {
-    const baseClass = "w-8 h-8 rounded-sm border border-border cursor-pointer transition-all hover:scale-110";
+    const baseClass = "w-10 h-10 rounded-md border cursor-pointer transition-all hover:scale-110 hover:shadow-md flex items-center justify-center";
     switch (level) {
       case 0:
-        return `${baseClass} bg-bridge-muted/20`;
+        return `${baseClass} bg-muted/30 border-border hover:bg-muted/50`;
       case 1:
-        return `${baseClass} bg-yellow-200 hover:bg-yellow-300`;
+        return `${baseClass} bg-yellow-100 border-yellow-200 hover:bg-yellow-200 hover:border-yellow-300`;
       case 2:
-        return `${baseClass} bg-orange-300 hover:bg-orange-400`;
+        return `${baseClass} bg-orange-200 border-orange-300 hover:bg-orange-300 hover:border-orange-400`;
       case 3:
-        return `${baseClass} bg-red-400 hover:bg-red-500`;
+        return `${baseClass} bg-red-300 border-red-400 hover:bg-red-400 hover:border-red-500`;
       case 4:
-        return `${baseClass} bg-red-600 hover:bg-red-700`;
+        return `${baseClass} bg-red-500 border-red-600 hover:bg-red-600 hover:border-red-700 text-white`;
       default:
-        return `${baseClass} bg-bridge-muted/20`;
+        return `${baseClass} bg-muted/30 border-border hover:bg-muted/50`;
     }
   };
   const getLegendClass = (level: number) => {
     switch (level) {
       case 0:
-        return "bg-bridge-muted/20";
+        return "bg-muted/30 border border-border";
       case 1:
-        return "bg-yellow-200";
+        return "bg-yellow-100 border border-yellow-200";
       case 2:
-        return "bg-orange-300";
+        return "bg-orange-200 border border-orange-300";
       case 3:
-        return "bg-red-400";
+        return "bg-red-300 border border-red-400";
       case 4:
-        return "bg-red-600";
+        return "bg-red-500 border border-red-600";
       default:
-        return "bg-bridge-muted/20";
+        return "bg-muted/30 border border-border";
     }
   };
 
@@ -84,27 +84,30 @@ const CalendarHeatmap = ({
   const maxIssues = Math.max(...data.map(item => item.issueCount), 1);
   
   return (
-    <Card>
-      <CardHeader>
-        <CardTitle className="text-lg font-semibold">{title}</CardTitle>
+    <Card className="border shadow-sm hover:shadow-md transition-shadow duration-300">
+      <CardHeader className="space-y-2 pb-4">
+        <CardTitle className="text-xl font-bold">{title}</CardTitle>
+        <p className="text-sm text-muted-foreground">
+          Daily issue frequency visualization
+        </p>
       </CardHeader>
-      <CardContent className="space-y-4">
-        <div className="grid grid-cols-7 gap-1 text-xs text-muted-foreground mb-2">
-          <div>S</div>
-          <div>M</div>
-          <div>T</div>
-          <div>W</div>
-          <div>T</div>
-          <div>F</div>
-          <div>S</div>
+      <CardContent className="space-y-6">
+        <div className="grid grid-cols-7 gap-2 text-sm font-semibold text-muted-foreground mb-3 px-1">
+          <div className="text-center">S</div>
+          <div className="text-center">M</div>
+          <div className="text-center">T</div>
+          <div className="text-center">W</div>
+          <div className="text-center">T</div>
+          <div className="text-center">F</div>
+          <div className="text-center">S</div>
         </div>
         
-        <div className="space-y-1">
+        <div className="space-y-2">
           {calendarWeeks.map((week, weekIndex) => (
-            <div key={weekIndex} className="grid grid-cols-7 gap-1">
+            <div key={weekIndex} className="grid grid-cols-7 gap-2">
               {week.map((date, dayIndex) => {
                 if (!date) {
-                  return <div key={dayIndex} className="w-8 h-8" />;
+                  return <div key={dayIndex} className="w-10 h-10" />;
                 }
                 
                 const heatmapData = getHeatmapData(date);
@@ -116,7 +119,7 @@ const CalendarHeatmap = ({
                     className={getHeatClass(issueLevel)}
                     title={`${format(date, 'MMM d')}: ${heatmapData?.issueCount || 0} issues`}
                   >
-                    <span className="flex items-center justify-center h-full text-xs font-medium">
+                    <span className={`text-xs font-bold ${issueLevel === 4 ? 'text-white' : 'text-foreground'}`}>
                       {format(date, 'd')}
                     </span>
                   </div>
@@ -126,11 +129,11 @@ const CalendarHeatmap = ({
           ))}
         </div>
         
-        <div className="flex items-center justify-between text-xs text-muted-foreground mt-4">
+        <div className="flex items-center justify-between text-sm font-medium text-muted-foreground mt-6 pt-4 border-t border-border">
           <span>Less</span>
-          <div className="flex items-center gap-1">
+          <div className="flex items-center gap-1.5">
             {[0, 1, 2, 3, 4].map((level) => (
-              <div key={level} className={`w-3 h-3 rounded-sm ${getLegendClass(level)}`} />
+              <div key={level} className={`w-4 h-4 rounded ${getLegendClass(level)}`} />
             ))}
           </div>
           <span>More</span>

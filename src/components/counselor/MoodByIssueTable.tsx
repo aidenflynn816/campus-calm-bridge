@@ -101,18 +101,18 @@ const MoodByIssueTable = ({ data, title = "Mood Analysis by Issue" }: MoodByIssu
   }
 
   return (
-    <Card className="bridge-card">
-      <CardHeader>
-        <CardTitle>{title}</CardTitle>
-        <p className="text-sm text-bridge-text/70">
+    <Card className="border shadow-sm hover:shadow-md transition-shadow duration-300">
+      <CardHeader className="space-y-2 pb-4">
+        <CardTitle className="text-xl font-bold">{title}</CardTitle>
+        <p className="text-sm text-muted-foreground">
           Average mood scores for each type of issue (sortable by severity)
         </p>
       </CardHeader>
       <CardContent>
-        <div className="rounded-md border">
+        <div className="rounded-lg border overflow-hidden">
           <Table>
-            <TableHeader>
-              <TableRow>
+            <TableHeader className="bg-muted/50">
+              <TableRow className="hover:bg-transparent">
                 <TableHead>
                   <Button 
                     variant="ghost" 
@@ -161,24 +161,24 @@ const MoodByIssueTable = ({ data, title = "Mood Analysis by Issue" }: MoodByIssu
             </TableHeader>
             <TableBody>
               {sortedData.map((item, index) => (
-                <TableRow key={index} className="hover:bg-bridge-muted/30">
-                  <TableCell className="font-medium">
+                <TableRow key={index} className="hover:bg-muted/50 transition-colors">
+                  <TableCell className="font-semibold text-foreground">
                     {item.issue}
                   </TableCell>
                   <TableCell>
-                    <span className={`font-semibold ${getMoodColor(item.averageMood)}`}>
-                      {item.averageMood}/5
+                    <span className={`font-bold text-lg ${getMoodColor(item.averageMood)}`}>
+                      {item.averageMood}<span className="text-sm text-muted-foreground">/5</span>
                     </span>
                   </TableCell>
                   <TableCell>
-                    <span className="text-bridge-text">
+                    <span className="text-foreground font-medium">
                       {item.occurrences}
                     </span>
                   </TableCell>
                   <TableCell>
                     <Badge 
                       variant={getSeverityBadgeVariant(item.severity)}
-                      className={`${getSeverityColor(item.severity)} capitalize`}
+                      className={`${getSeverityColor(item.severity)} capitalize font-semibold`}
                     >
                       {item.severity}
                     </Badge>
@@ -190,25 +190,25 @@ const MoodByIssueTable = ({ data, title = "Mood Analysis by Issue" }: MoodByIssu
         </div>
 
         {/* Summary Stats */}
-        <div className="mt-6 pt-4 border-t border-border">
-          <div className="grid grid-cols-3 gap-4 text-center">
-            <div>
-              <p className="text-2xl font-bold text-red-600">
+        <div className="mt-6 pt-6 border-t border-border bg-muted/30 -mx-6 px-6 -mb-6 pb-6 rounded-b-lg">
+          <div className="grid grid-cols-3 gap-6">
+            <div className="text-center space-y-1">
+              <p className="text-3xl font-bold text-red-600">
                 {sortedData.filter(item => item.severity === 'high').length}
               </p>
-              <p className="text-sm text-bridge-text/70">High Severity</p>
+              <p className="text-sm font-medium text-muted-foreground">High Severity</p>
             </div>
-            <div>
-              <p className="text-2xl font-bold text-orange-600">
+            <div className="text-center space-y-1 border-x border-border">
+              <p className="text-3xl font-bold text-orange-600">
                 {sortedData.filter(item => item.severity === 'medium').length}
               </p>
-              <p className="text-sm text-bridge-text/70">Medium Severity</p>
+              <p className="text-sm font-medium text-muted-foreground">Medium Severity</p>
             </div>
-            <div>
-              <p className="text-2xl font-bold text-green-600">
+            <div className="text-center space-y-1">
+              <p className="text-3xl font-bold text-green-600">
                 {sortedData.filter(item => item.severity === 'low').length}
               </p>
-              <p className="text-sm text-bridge-text/70">Low Severity</p>
+              <p className="text-sm font-medium text-muted-foreground">Low Severity</p>
             </div>
           </div>
         </div>

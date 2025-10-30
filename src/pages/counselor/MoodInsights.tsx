@@ -47,19 +47,19 @@ const MoodInsights = () => {
       </Layout>;
   }
   return <Layout>
-      <div className="space-y-6">
+      <div className="space-y-8 animate-fade-in">
         {/* Header */}
-        <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
-          <div>
-            <h1 className="text-3xl font-bold text-bridge-primary">Mood Data Insights</h1>
-            <p className="text-lg text-bridge-text/70 mt-1">
+        <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-6 pb-4 border-b border-border">
+          <div className="space-y-2">
+            <h1 className="text-4xl font-bold text-bridge-primary tracking-tight">Mood Data Insights</h1>
+            <p className="text-base text-muted-foreground max-w-2xl">
               Comprehensive analytics of student mood check-ins and issues
             </p>
           </div>
           
-          <div className="flex items-center gap-4">
+          <div className="flex items-center gap-3">
             <Select value={selectedGroup} onValueChange={setSelectedGroup}>
-              <SelectTrigger className="w-40">
+              <SelectTrigger className="w-44 bg-background shadow-sm">
                 <SelectValue placeholder="Select group" />
               </SelectTrigger>
               <SelectContent>
@@ -69,7 +69,7 @@ const MoodInsights = () => {
             </Select>
             
             <Select value={dateRange.toString()} onValueChange={value => setDateRange(parseInt(value))}>
-              <SelectTrigger className="w-32">
+              <SelectTrigger className="w-36 bg-background shadow-sm">
                 <SelectValue placeholder="Date range" />
               </SelectTrigger>
               <SelectContent>
@@ -82,13 +82,15 @@ const MoodInsights = () => {
         </div>
 
         {/* Data Access Notice */}
-        {moodData.length === 0 && <Card className="border-yellow-200 bg-yellow-50">
+        {moodData.length === 0 && <Card className="border-l-4 border-l-yellow-500 bg-yellow-50/50 shadow-sm">
             <CardContent className="pt-6">
-              <div className="flex items-center gap-3">
-                <AlertCircle className="h-5 w-5 text-yellow-600" />
-                <div>
-                  <p className="font-medium text-yellow-800">No mood data available</p>
-                  <p className="text-sm text-yellow-700">
+              <div className="flex items-start gap-4">
+                <div className="p-2 bg-yellow-100 rounded-lg">
+                  <AlertCircle className="h-6 w-6 text-yellow-600" />
+                </div>
+                <div className="flex-1">
+                  <p className="font-semibold text-yellow-900 mb-1">No mood data available</p>
+                  <p className="text-sm text-yellow-800 leading-relaxed">
                     Students need to approve data sharing requests for their mood check-ins to appear here.
                   </p>
                 </div>
@@ -102,19 +104,18 @@ const MoodInsights = () => {
 
             {/* Main Analytics Tabs */}
             <Tabs defaultValue="trends" className="space-y-6">
-              <TabsList className="bg-bridge-muted/30">
-                <TabsTrigger value="trends" className="flex items-center gap-2">
+              <TabsList className="bg-muted/50 p-1 h-auto rounded-xl shadow-sm">
+                <TabsTrigger value="trends" className="flex items-center gap-2 data-[state=active]:bg-background data-[state=active]:shadow-sm rounded-lg px-4 py-2.5">
                   <TrendingUp className="h-4 w-4" />
-                  Trends
+                  <span className="font-medium">Trends</span>
                 </TabsTrigger>
-                <TabsTrigger value="issues" className="flex items-center gap-2">
+                <TabsTrigger value="issues" className="flex items-center gap-2 data-[state=active]:bg-background data-[state=active]:shadow-sm rounded-lg px-4 py-2.5">
                   <BarChart3 className="h-4 w-4" />
-                  Issues
+                  <span className="font-medium">Issues</span>
                 </TabsTrigger>
-                
-                <TabsTrigger value="analysis" className="flex items-center gap-2">
+                <TabsTrigger value="analysis" className="flex items-center gap-2 data-[state=active]:bg-background data-[state=active]:shadow-sm rounded-lg px-4 py-2.5">
                   <Table className="h-4 w-4" />
-                  Analysis
+                  <span className="font-medium">Analysis</span>
                 </TabsTrigger>
               </TabsList>
 
