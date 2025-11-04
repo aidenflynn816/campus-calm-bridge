@@ -65,12 +65,12 @@ export function EmergencyButton() {
             <AlertDialog>
               <AlertDialogTrigger asChild>
                 <Button
-                  className="w-full py-6 text-lg"
+                  className="w-full py-4 text-base"
                   variant="destructive"
                 >
-                  <div className="flex flex-col items-center gap-1">
+                  <div className="flex flex-col items-center gap-0.5">
                     <span>National Suicide Prevention Lifeline</span>
-                    <span className="text-sm opacity-90">{suicidePreventionNumber}</span>
+                    <span className="text-xs opacity-90">{suicidePreventionNumber}</span>
                   </div>
                 </Button>
               </AlertDialogTrigger>
@@ -95,12 +95,12 @@ export function EmergencyButton() {
             <AlertDialog>
               <AlertDialogTrigger asChild>
                 <Button
-                  className="w-full py-6 text-lg"
+                  className="w-full py-4 text-base"
                   variant="secondary"
                 >
-                  <div className="flex flex-col items-center gap-1">
+                  <div className="flex flex-col items-center gap-0.5">
                     <span>On-Call Counselor (During Hours)</span>
-                    <span className="text-sm opacity-90">{onCallCounselorNumber}</span>
+                    <span className="text-xs opacity-90">{onCallCounselorNumber}</span>
                   </div>
                 </Button>
               </AlertDialogTrigger>
@@ -125,12 +125,12 @@ export function EmergencyButton() {
             <AlertDialog>
               <AlertDialogTrigger asChild>
                 <Button
-                  className="w-full py-6 text-lg"
+                  className="w-full py-4 text-base"
                   variant="secondary"
                 >
-                  <div className="flex flex-col items-center gap-1">
+                  <div className="flex flex-col items-center gap-0.5">
                     <span>On-Call Counselor (After Hours)</span>
-                    <span className="text-sm opacity-90">{healthCenterNumber}</span>
+                    <span className="text-xs opacity-90">{healthCenterNumber}</span>
                   </div>
                 </Button>
               </AlertDialogTrigger>
@@ -155,12 +155,12 @@ export function EmergencyButton() {
             <AlertDialog>
               <AlertDialogTrigger asChild>
                 <Button
-                  className="w-full py-6 text-lg"
+                  className="w-full py-4 text-base"
                   variant="secondary"
                 >
-                  <div className="flex flex-col items-center gap-1">
+                  <div className="flex flex-col items-center gap-0.5">
                     <span>Health Center</span>
-                    <span className="text-sm opacity-90">{healthCenterNumber}</span>
+                    <span className="text-xs opacity-90">{healthCenterNumber}</span>
                   </div>
                 </Button>
               </AlertDialogTrigger>
@@ -186,7 +186,7 @@ export function EmergencyButton() {
               <AlertDialog>
                 <AlertDialogTrigger asChild>
                   <Button
-                    className="w-full py-6 text-lg"
+                    className="w-full py-4 text-base"
                     variant="secondary"
                   >
                     Call Personal Emergency Contact
