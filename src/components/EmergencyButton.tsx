@@ -65,7 +65,7 @@ export function EmergencyButton() {
             <AlertDialog>
               <AlertDialogTrigger asChild>
                 <Button
-                  className="w-full py-4 text-base"
+                  className="w-full py-6 text-base px-6"
                   variant="destructive"
                 >
                   <div className="flex flex-col items-center gap-0.5">
@@ -95,7 +95,7 @@ export function EmergencyButton() {
             <AlertDialog>
               <AlertDialogTrigger asChild>
                 <Button
-                  className="w-full py-4 text-base"
+                  className="w-full py-6 text-base px-6"
                   variant="secondary"
                 >
                   <div className="flex flex-col items-center gap-0.5">
@@ -125,7 +125,7 @@ export function EmergencyButton() {
             <AlertDialog>
               <AlertDialogTrigger asChild>
                 <Button
-                  className="w-full py-4 text-base"
+                  className="w-full py-6 text-base px-6"
                   variant="secondary"
                 >
                   <div className="flex flex-col items-center gap-0.5">
@@ -155,7 +155,7 @@ export function EmergencyButton() {
             <AlertDialog>
               <AlertDialogTrigger asChild>
                 <Button
-                  className="w-full py-4 text-base"
+                  className="w-full py-6 text-base px-6"
                   variant="secondary"
                 >
                   <div className="flex flex-col items-center gap-0.5">
@@ -186,7 +186,7 @@ export function EmergencyButton() {
               <AlertDialog>
                 <AlertDialogTrigger asChild>
                   <Button
-                    className="w-full py-4 text-base"
+                    className="w-full py-6 text-base px-6"
                     variant="secondary"
                   >
                     Call Personal Emergency Contact
