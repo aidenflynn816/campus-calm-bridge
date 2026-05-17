@@ -255,6 +255,7 @@ export type Database = {
           created_at: string
           full_name: string | null
           id: string
+          mood_data_shared: boolean
           mood_reminder_enabled: boolean | null
           role: string
           updated_at: string
@@ -267,6 +268,7 @@ export type Database = {
           created_at?: string
           full_name?: string | null
           id?: string
+          mood_data_shared?: boolean
           mood_reminder_enabled?: boolean | null
           role: string
           updated_at?: string
@@ -279,6 +281,7 @@ export type Database = {
           created_at?: string
           full_name?: string | null
           id?: string
+          mood_data_shared?: boolean
           mood_reminder_enabled?: boolean | null
           role?: string
           updated_at?: string
@@ -396,10 +399,7 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
-      get_current_user_role: {
-        Args: Record<PropertyKey, never>
-        Returns: string
-      }
+      get_current_user_role: { Args: never; Returns: string }
       get_user_google_token_secure: {
         Args: { target_user_id: string }
         Returns: {
