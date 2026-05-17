@@ -153,24 +153,10 @@ const Register = () => {
               />
             </motion.div>
             
-            <motion.div variants={itemVariants} className="space-y-3">
-              <p className="block text-sm font-medium">I am a:</p>
-              <RadioGroup 
-                value={role} 
-                onValueChange={(value) => setRole(value as "student" | "counselor")}
-                className="flex space-x-6"
-              >
-                <div className="flex items-center space-x-2 bg-white rounded-xl p-3 px-4 border border-bridge-muted/50 cursor-pointer hover:border-bridge-primary/30 transition-colors">
-                  <RadioGroupItem value="student" id="student" />
-                  <Label htmlFor="student" className="cursor-pointer font-medium">Student</Label>
-                </div>
-                <div className="flex items-center space-x-2 bg-white rounded-xl p-3 px-4 border border-bridge-muted/50 cursor-pointer hover:border-bridge-primary/30 transition-colors">
-                  <RadioGroupItem value="counselor" id="counselor" />
-                  <Label htmlFor="counselor" className="cursor-pointer font-medium">Counselor/Staff</Label>
-                </div>
-              </RadioGroup>
+            <motion.div variants={itemVariants} className="rounded-xl bg-bridge-primary/5 border border-bridge-primary/10 p-4 text-sm text-gray-700">
+              Student accounts only. You must register with your <span className="font-medium">@groton.org</span> email. Counselor accounts are created by an administrator.
             </motion.div>
-            
+
             <motion.div variants={itemVariants} className="pt-2">
               <Button
                 type="submit"
