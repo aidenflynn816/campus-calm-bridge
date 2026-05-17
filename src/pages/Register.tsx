@@ -15,7 +15,7 @@ const Register = () => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
-  const [role, setRole] = useState<"student" | "counselor">("student");
+  const role = "student" as const;
   const [isSubmitting, setIsSubmitting] = useState(false);
   const { signUp } = useAuth();
 
@@ -27,6 +27,12 @@ const Register = () => {
       return;
     }
     
+    const normalizedEmail = email.trim().toLowerCase();
+    if (!normalizedEmail.endsWith("@groton.org")) {
+      toast.error("Student accounts must use a @groton.org email address");
+      return;
+    }
+    
     if (password !== confirmPassword) {
       toast.error("Passwords do not match");
       return;
@@ -35,7 +41,7 @@ const Register = () => {
     setIsSubmitting(true);
     
     try {
-      await signUp(email, password, role, name);
+      await signUp(normalizedEmail, password, role, name);
     } catch (error) {
       // Error is handled in signUp function
     } finally {
@@ -147,24 +153,10 @@ const Register = () => {
               />
             </motion.div>
             
-            <motion.div variants={itemVariants} className="space-y-3">
-              <p className="block text-sm font-medium">I am a:</p>
-              <RadioGroup 
-                value={role} 
-                onValueChange={(value) => setRole(value as "student" | "counselor")}
-                className="flex space-x-6"
-              >
-                <div className="flex items-center space-x-2 bg-white rounded-xl p-3 px-4 border border-bridge-muted/50 cursor-pointer hover:border-bridge-primary/30 transition-colors">
-                  <RadioGroupItem value="student" id="student" />
-                  <Label htmlFor="student" className="cursor-pointer font-medium">Student</Label>
-                </div>
-                <div className="flex items-center space-x-2 bg-white rounded-xl p-3 px-4 border border-bridge-muted/50 cursor-pointer hover:border-bridge-primary/30 transition-colors">
-                  <RadioGroupItem value="counselor" id="counselor" />
-                  <Label htmlFor="counselor" className="cursor-pointer font-medium">Counselor/Staff</Label>
-                </div>
-              </RadioGroup>
+            <motion.div variants={itemVariants} className="rounded-xl bg-bridge-primary/5 border border-bridge-primary/10 p-4 text-sm text-gray-700">
+              Student accounts only. You must register with your <span className="font-medium">@groton.org</span> email. Counselor accounts are created by an administrator.
             </motion.div>
-            
+
             <motion.div variants={itemVariants} className="pt-2">
               <Button
                 type="submit"
