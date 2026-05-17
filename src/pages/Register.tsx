@@ -15,7 +15,7 @@ const Register = () => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
-  const [role, setRole] = useState<"student" | "counselor">("student");
+  const role = "student" as const;
   const [isSubmitting, setIsSubmitting] = useState(false);
   const { signUp } = useAuth();
 
@@ -27,6 +27,12 @@ const Register = () => {
       return;
     }
     
+    const normalizedEmail = email.trim().toLowerCase();
+    if (!normalizedEmail.endsWith("@groton.org")) {
+      toast.error("Student accounts must use a @groton.org email address");
+      return;
+    }
+    
     if (password !== confirmPassword) {
       toast.error("Passwords do not match");
       return;
@@ -35,7 +41,7 @@ const Register = () => {
     setIsSubmitting(true);
     
     try {
-      await signUp(email, password, role, name);
+      await signUp(normalizedEmail, password, role, name);
     } catch (error) {
       // Error is handled in signUp function
     } finally {
