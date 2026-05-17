@@ -63,12 +63,12 @@ const Layout = ({
     icon: <User size={20} />,
     label: 'Profile'
   }];
-  const sidebarVariants = {
+  const sidebarVariants: import("framer-motion").Variants = {
     open: {
       x: 0,
       opacity: 1,
       transition: {
-        type: "spring",
+        type: "spring" as const,
         stiffness: 300,
         damping: 30
       }
@@ -77,7 +77,7 @@ const Layout = ({
       x: "-100%",
       opacity: 0,
       transition: {
-        type: "spring",
+        type: "spring" as const,
         stiffness: 300,
         damping: 30
       }
